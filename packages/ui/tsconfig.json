@@ -1,8 +1,11 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
-  "include": ["."],
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "extends": "@repo/typescript-config/base.json",
+  "include": ["index.ts", "src/**/*", "src/**/*.tsx", "src/**/*.ts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "jsx": "react-jsx"
   }
 }

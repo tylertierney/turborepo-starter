@@ -11,14 +11,13 @@
   },
   "dependencies": {
     "@repo/ui": "*",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query-devtools": "^5.101.4",
+    "react-router": "^8.3.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@types/react": "^19.0.1",
-    "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8.57.0",
     "typescript": "5.5.4",

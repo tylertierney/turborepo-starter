@@ -1,25 +1,33 @@
 {
   "name": "@repo/ui",
   "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#components": "./components/*",
+    "#lib/*": "./lib/*",
+    "#components/ui": "./components/ui",
+    "#lib": "./lib",
+    "#hooks": "./hooks"
+  },
   "exports": {
-    ".": "./index.ts",
-    "./counter": "./components/counter.ts",
-    "./header": "./components/header.ts",
-    "./setup-counter": "./utils/counter.ts"
+    ".": {
+      "import": "./index.ts",
+      "types": "./index.ts"
+    }
   },
   "license": "MIT",
   "scripts": {
     "lint": "eslint \"**/*.ts\""
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@types/react": "^19.0.1",
-    "@types/react-dom": "^19.0.2",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "eslint": "^8.57.0",
     "typescript": "5.5.4"
   }
