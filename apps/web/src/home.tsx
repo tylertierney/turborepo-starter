@@ -1,5 +1,6 @@
 import { User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
+import { Button } from '@repo/ui'
 
 export default function Home() {
   const { data, isLoading, error } = useQuery({
@@ -23,13 +24,22 @@ export default function Home() {
 
   return (
     <>
+      <Button
+        variant={'outline'}
+        size={'lg'}
+        onClick={() => console.log('clicked')}
+      >
+        hello
+      </Button>
       <h2>Found {totalCount} users </h2>
-      <table>
+      <table className="w-full">
         <thead>
           <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
+            {['First Name', 'Last Name', 'Email'].map((header) => (
+              <th key={header} className="text-left bg-pink-400">
+                {header}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
