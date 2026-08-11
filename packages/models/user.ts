@@ -2,6 +2,7 @@ import {
   randEmail,
   randFirstName,
   randLastName,
+  randNumber,
   randPassword,
   randPastDate,
   randUuid,
@@ -9,6 +10,7 @@ import {
 
 export type User = {
   id: string
+  userNumber: number
   firstName: string
   lastName: string
   email: string
@@ -18,6 +20,7 @@ export type User = {
 
 export const mockUser = (partial: Partial<User> = {}): User => ({
   id: randUuid(),
+  userNumber: randNumber(),
   firstName: randFirstName(),
   lastName: randLastName(),
   email: randEmail(),

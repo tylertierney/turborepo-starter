@@ -18,11 +18,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll(
+  async findAll(
     @Query('page', new ParseIntPipe({ optional: true })) page = 0,
     @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize = 10,
+    @Query('q') search = '',
   ) {
-    return this.usersService.findAll({ page, pageSize })
+    const delay = (ms: number) =>
+      new Promise(resolve => setTimeout(resolve, ms))
+    await delay(2000)
+
+    return this.usersService.findAll({ page, pageSize, search })
+    // return {users: [], totalCount: 0}
   }
 
   @Get(':id')

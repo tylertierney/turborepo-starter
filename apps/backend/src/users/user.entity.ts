@@ -11,7 +11,6 @@ export class UserEntity {
   constructor(partial: Partial<UserEntity> = {}) {
     Object.assign(this, partial)
   }
-
   @PrimaryGeneratedColumn('uuid')
   id: string = ''
 
@@ -29,10 +28,13 @@ export class UserEntity {
 
   @CreateDateColumn()
   createdAt: Date = new Date()
+
+  @Column()
+  active: boolean = true
 }
 
 export const mockUser = (partial: Partial<UserEntity> = {}): UserEntity => {
-  const temp = { ...randUser(), password: randPassword() }
+  const temp = { ...randUser(), password: randPassword(), active: true }
 
   const res = new UserEntity()
 

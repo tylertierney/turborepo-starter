@@ -1,57 +1,85 @@
 import { User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '@repo/ui'
+import { Button, Datatable, DatatableParams } from '@repo/ui'
+import { useState } from 'react'
 
 export default function Home() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      const data = await fetch('http://localhost:8080/api/users')
-      const json = (await data.json()) as { users: User[]; totalCount: number }
-      return json
-    },
+  const [datatableParams, setDatatableParams] = useState<DatatableParams>({
+    pageSize: 10,
+    currentPage: 1,
+    search: '',
   })
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  const { data, isFetching, error } = useQuery({
+    queryKey: ['users', JSON.stringify(datatableParams)],
+    queryFn: async () => {
+      const { pageSize, currentPage, search } = datatableParams
+      const url = new URL('http://localhost:8080/api/users')
+      url.searchParams.set('pageSize', String(pageSize))
+      url.searchParams.set('page', String(currentPage - 1))
+      if (search) {
+        url.searchParams.set('q', search)
+      }
 
-  if (error) {
-    return <div>Error: {(error as Error).message}</div>
-  }
+      try {
+        const data = await fetch(url)
+        const json = (await data.json()) as {
+          users: User[]
+          totalCount: number
+        }
+        return json
+      } catch {
+        return { users: [], totalCount: 0 }
+      }
+    },
+    placeholderData: (prev) => prev,
+  })
 
   const { users = [], totalCount = 0 } = data || {}
 
   return (
     <>
-      <Button
-        variant={'outline'}
-        size={'lg'}
-        onClick={() => console.log('clicked')}
-      >
-        hello
-      </Button>
-      <h2>Found {totalCount} users </h2>
-      <table className="w-full">
-        <thead>
-          <tr>
-            {['First Name', 'Last Name', 'Email'].map((header) => (
-              <th key={header} className="text-left bg-pink-400">
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.firstName}</td>
-              <td>{user.lastName}</td>
-              <td>{user.email}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <pre>{String(isFetching)}</pre>
+      <Datatable<User>
+        className="md:max-w-3xl mb-60"
+        columns={[
+          {
+            headerName: 'ID',
+            field: 'id',
+            style: {
+              width: '10%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          },
+          {
+            headerName: 'First Name',
+            field: 'firstName',
+          },
+          {
+            headerName: 'Last Name',
+            field: 'lastName',
+          },
+          {
+            headerName: 'Email',
+            field: 'email',
+            cellRenderer: ({ email }) => (
+              <a
+                className="text-indigo-500 no-underline hover:underline"
+                href={`mailto:${email}`}
+              >
+                {email}
+              </a>
+            ),
+          },
+        ]}
+        data={users}
+        totalCount={totalCount}
+        params={datatableParams}
+        setParams={setDatatableParams}
+        loading={isFetching}
+        error={error ? 'Something happened' : undefined}
+      ></Datatable>
     </>
   )
 }

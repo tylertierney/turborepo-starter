@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { mockUser, UserEntity } from './user.entity'
-import { Repository } from 'typeorm'
+import { ILike, Repository } from 'typeorm'
 import { PaginationQuery } from './users.controller'
 
 @Injectable()
@@ -20,21 +20,32 @@ export class UsersService implements OnApplicationBootstrap {
   private resetAndSeedDatabase = async () => {
     await this.usersRepository.clear()
 
-    const users: UserEntity[] = Array(42).fill(null).map(mockUser)
+    const users: UserEntity[] = Array(126).fill(null).map(mockUser)
     await this.usersRepository.save(users)
 
     this.logger.log(`Seeded ${users.length} users into the database.`)
   }
 
   async findAll(
-    query?: PaginationQuery,
+    query?: PaginationQuery & { search?: string },
   ): Promise<{ users: UserEntity[]; totalCount: number }> {
-    const { page = 0, pageSize = 20 } = query || {}
+    const { page = 0, pageSize = 10, search = '' } = query || {}
 
     const [users, totalCount] = await this.usersRepository.findAndCount({
       // relations: {
       //   companies: true,
       // }
+      where: [
+        {
+          firstName: ILike(`%${search}%`),
+        },
+        {
+          lastName: ILike(`%${search}%`),
+        },
+        {
+          email: ILike(`%${search}%`),
+        },
+      ],
       take: pageSize,
       skip: page * pageSize,
     })
