@@ -1,4 +1,4 @@
-import { randPassword, randUser } from '@ngneat/falso'
+import { randPassword, randPastDate, randUser } from '@ngneat/falso'
 import {
   Column,
   CreateDateColumn,
@@ -34,7 +34,12 @@ export class UserEntity {
 }
 
 export const mockUser = (partial: Partial<UserEntity> = {}): UserEntity => {
-  const temp = { ...randUser(), password: randPassword(), active: true }
+  const temp = {
+    ...randUser(),
+    password: randPassword(),
+    active: true,
+    createdAt: randPastDate(),
+  }
 
   const res = new UserEntity()
 

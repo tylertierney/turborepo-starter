@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -19,16 +20,18 @@ export class UsersController {
 
   @Get()
   async findAll(
-    @Query('page', new ParseIntPipe({ optional: true })) page = 0,
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
     @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize = 10,
     @Query('q') search = '',
   ) {
-    const delay = (ms: number) =>
-      new Promise(resolve => setTimeout(resolve, ms))
-    await delay(2000)
+    // const delay = (ms: number) =>
+    //   new Promise(resolve => setTimeout(resolve, ms))
+    // await delay(2000)
 
     return this.usersService.findAll({ page, pageSize, search })
-    // return {users: [], totalCount: 0}
+
+    // throw new InternalServerErrorException('ahhhhhh!')
+    // return { users: [], totalCount: 0 }
   }
 
   @Get(':id')

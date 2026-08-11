@@ -1,6 +1,6 @@
 import { User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
-import { Button, Datatable, DatatableParams } from '@repo/ui'
+import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 
 export default function Home() {
@@ -14,26 +14,35 @@ export default function Home() {
     queryKey: ['users', JSON.stringify(datatableParams)],
     queryFn: async () => {
       const { pageSize, currentPage, search } = datatableParams
-      const url = new URL('http://localhost:8080/api/users')
-      url.searchParams.set('pageSize', String(pageSize))
-      url.searchParams.set('page', String(currentPage - 1))
+
+      const params = new URLSearchParams({
+        pageSize: String(pageSize),
+        page: String(currentPage),
+      })
+
       if (search) {
-        url.searchParams.set('q', search)
+        params.set('q', search)
       }
 
+      const queryString = '?' + params.toString()
+
       try {
-        const data = await fetch(url)
+        const data = await fetch('/api/users' + queryString)
         const json = (await data.json()) as {
           users: User[]
           totalCount: number
         }
         return json
-      } catch {
+      } catch (err) {
+        throw new Error(err as unknown as string)
+        console.error(err)
         return { users: [], totalCount: 0 }
       }
     },
-    placeholderData: (prev) => prev,
+    // placeholderData: (prev) => prev,
   })
+
+  console.log(error)
 
   const { users = [], totalCount = 0 } = data || {}
 
@@ -51,6 +60,7 @@ export default function Home() {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             },
+            cellRenderer: ({ id }) => <code className="text-xs">{id}</code>,
           },
           {
             headerName: 'First Name',
@@ -61,11 +71,21 @@ export default function Home() {
             field: 'lastName',
           },
           {
+            headerName: 'Created At',
+            field: 'createdAt',
+            cellRenderer: ({ createdAt }) =>
+              new Date(createdAt).toLocaleDateString('en-us'),
+          },
+          {
             headerName: 'Email',
             field: 'email',
+            style: {
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
             cellRenderer: ({ email }) => (
               <a
-                className="text-indigo-500 no-underline hover:underline"
+                className="text-indigo-500 dark:text-indigo-300 no-underline hover:underline"
                 href={`mailto:${email}`}
               >
                 {email}

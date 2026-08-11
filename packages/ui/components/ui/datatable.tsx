@@ -1,5 +1,10 @@
 import { Spinner } from './spinner'
-import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from './input-group'
 import {
   CSSProperties,
   Dispatch,
@@ -24,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from './table'
-import { Search } from 'lucide-react'
+import { Search, XIcon } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -40,8 +45,6 @@ const range = (start: number, end: number) => {
     .fill(null)
     .map((_, idx) => start + idx)
 }
-
-console.log(range(2, 6))
 
 type IPaginationItem = 'ellipsis-prev' | 'ellipsis-next' | number
 
@@ -108,7 +111,7 @@ const TablePagination = ({
 
   const paginationItems = getPaginationItems({ currentPage, totalPages })
 
-  const startRowIdx = (currentPage - 1) * pageSize + 1
+  const startRowIdx = Math.min((currentPage - 1) * pageSize + 1, totalCount)
   const endRowIdx = Math.min(
     (currentPage - 1) * pageSize + pageSize,
     totalCount,
@@ -117,7 +120,7 @@ const TablePagination = ({
   return (
     <Pagination>
       <PaginationContent className="gap-8">
-        <span className="text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {startRowIdx} - {endRowIdx} of {totalCount}
         </span>
         <div className="flex items-center gap-1">
@@ -182,7 +185,7 @@ const TablePagination = ({
           </PaginationItem>
         </div>
         <label className="flex items-center gap-2">
-          <span className="text-muted-foreground">Items per page</span>
+          <span className="text-sm text-muted-foreground">Items per page</span>
           <Select<number>
             value={pageSize}
             onValueChange={(n) => {
@@ -239,12 +242,13 @@ export const Datatable = <T,>({
   params,
   setParams,
   loading = false,
-  // error,
+  error,
   className = '',
   ...rest
 }: DatatableProps<T> & HTMLAttributes<HTMLDivElement>) => {
+  console.log(error)
   return (
-    <div className={`flex flex-col ${className}`} {...rest}>
+    <div className={`flex flex-col gap-2 ${className}`} {...rest}>
       <InputGroup className="self-end max-w-60">
         <InputGroupInput
           type="search"
@@ -260,6 +264,18 @@ export const Datatable = <T,>({
         />
         <InputGroupAddon>
           <Search />
+        </InputGroupAddon>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            aria-label="reset-search"
+            title="reset-search"
+            size="icon-xs"
+            onClick={() => {
+              setParams((prev) => ({ ...prev, search: '', currentPage: 1 }))
+            }}
+          >
+            <XIcon />
+          </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
       <div
@@ -297,8 +313,13 @@ export const Datatable = <T,>({
           </TableBody>
         </Table>
         {loading && (
-          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/50 z-10">
+          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/50">
             <Spinner className="size-6" />
+          </div>
+        )}
+        {Boolean(error) && (
+          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/50 pt-6">
+            {error}
           </div>
         )}
       </div>
@@ -311,8 +332,6 @@ export const Datatable = <T,>({
         setPaginationParams={(cb) => {
           if (typeof cb === 'function') {
             const callback = cb as (prev: PaginationParams) => PaginationParams
-            // const p = callback()
-
             setParams((prev) => ({
               ...prev,
               ...callback(prev),

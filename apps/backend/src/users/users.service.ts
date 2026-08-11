@@ -20,7 +20,7 @@ export class UsersService implements OnApplicationBootstrap {
   private resetAndSeedDatabase = async () => {
     await this.usersRepository.clear()
 
-    const users: UserEntity[] = Array(126).fill(null).map(mockUser)
+    const users: UserEntity[] = Array(42).fill(null).map(mockUser)
     await this.usersRepository.save(users)
 
     this.logger.log(`Seeded ${users.length} users into the database.`)
@@ -29,7 +29,9 @@ export class UsersService implements OnApplicationBootstrap {
   async findAll(
     query?: PaginationQuery & { search?: string },
   ): Promise<{ users: UserEntity[]; totalCount: number }> {
-    const { page = 0, pageSize = 10, search = '' } = query || {}
+    const { page = 1, pageSize = 10, search = '' } = query || {}
+
+    const _page = Math.max(1, page)
 
     const [users, totalCount] = await this.usersRepository.findAndCount({
       // relations: {
@@ -46,8 +48,11 @@ export class UsersService implements OnApplicationBootstrap {
           email: ILike(`%${search}%`),
         },
       ],
+      order: {
+        createdAt: 'DESC',
+      },
       take: pageSize,
-      skip: page * pageSize,
+      skip: (_page - 1) * pageSize,
     })
 
     return { users, totalCount }
