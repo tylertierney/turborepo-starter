@@ -5,7 +5,6 @@ import { ILike, Repository } from 'typeorm'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
 import { PaginatedResult } from '@repo/models'
 import { paginate } from '../shared/pagination/pagination.util'
-import { instanceToPlain } from 'class-transformer'
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {

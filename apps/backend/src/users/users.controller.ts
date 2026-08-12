@@ -1,10 +1,11 @@
 import {
   Controller,
   Get,
-  InternalServerErrorException,
+  // InternalServerErrorException,
   NotFoundException,
   Param,
   Query,
+  ValidationPipe,
 } from '@nestjs/common'
 import { UsersService } from './users.service'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
@@ -50,19 +51,6 @@ export class UsersController {
         'id' | 'firstName' | 'lastName' | 'createdAt' | 'email' | 'active'
       >
     >,
-    // schema: {
-    //   example: {
-    //     data: Array(10).fill(null).map(mockUser),
-    //     meta: {
-    //       totalCount: 10,
-    //       pageSize: 10,
-    //       totalPages: 1,
-    //       currentPage: 1,
-    //       itemCount: 10,
-    //     },
-    //   },
-    //   //  satisfies PaginatedResult<UserEntity>,
-    // },
   })
   @Get()
   @ApiQuery({
@@ -72,7 +60,8 @@ export class UsersController {
     description: 'Search users by firstName, lastName, or email.',
   })
   async findAll(
-    @Query() paginationQuery: PaginationQueryDto,
+    @Query(new ValidationPipe({ transform: true }))
+    paginationQuery: PaginationQueryDto,
     @Query('search')
     search = '',
   ) {

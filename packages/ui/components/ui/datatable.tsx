@@ -104,7 +104,8 @@ const TablePagination = ({
   paginationParams = { pageSize: 10, currentPage: 1 },
   setPaginationParams,
   buffer = 5,
-}: PaginationProps) => {
+  className,
+}: PaginationProps & HTMLAttributes<HTMLDivElement>) => {
   const { pageSize, currentPage } = paginationParams
 
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1)
@@ -118,8 +119,8 @@ const TablePagination = ({
   )
 
   return (
-    <Pagination>
-      <PaginationContent className="gap-8">
+    <Pagination className={className}>
+      <PaginationContent className="gap-3 sm:gap-8">
         <span className="text-sm text-muted-foreground">
           {startRowIdx} - {endRowIdx} of {totalCount}
         </span>
@@ -247,36 +248,38 @@ export const Datatable = <T,>({
   ...rest
 }: DatatableProps<T> & HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className={`flex flex-col gap-2 ${className}`} {...rest}>
-      <InputGroup className="self-end max-w-60">
-        <InputGroupInput
-          type="search"
-          value={params.search ?? ''}
-          onChange={(e) => {
-            setParams((prev) => ({
-              ...prev,
-              search: e.target.value,
-              currentPage: 1,
-            }))
-          }}
-          placeholder="Search"
-        />
-        <InputGroupAddon>
-          <Search />
-        </InputGroupAddon>
-        <InputGroupAddon align="inline-end">
-          <InputGroupButton
-            aria-label="reset-search"
-            title="reset-search"
-            size="icon-xs"
-            onClick={() => {
-              setParams((prev) => ({ ...prev, search: '', currentPage: 1 }))
+    <div className={`flex flex-col gap-4 ${className}`} {...rest}>
+      <div className="flex px-2 justify-end">
+        <InputGroup className="max-w-50">
+          <InputGroupInput
+            type="search"
+            value={params.search ?? ''}
+            onChange={(e) => {
+              setParams((prev) => ({
+                ...prev,
+                search: e.target.value,
+                currentPage: 1,
+              }))
             }}
-          >
-            <XIcon />
-          </InputGroupButton>
-        </InputGroupAddon>
-      </InputGroup>
+            placeholder="Search"
+          />
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              aria-label="reset-search"
+              title="reset-search"
+              size="icon-xs"
+              onClick={() => {
+                setParams((prev) => ({ ...prev, search: '', currentPage: 1 }))
+              }}
+            >
+              <XIcon />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
       <div
         className="relative flex flex-col"
         style={{
@@ -323,6 +326,7 @@ export const Datatable = <T,>({
         )}
       </div>
       <TablePagination
+        className="px-3"
         totalCount={totalCount}
         paginationParams={{
           currentPage: params.currentPage,

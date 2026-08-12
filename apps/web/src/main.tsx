@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
 const App = () => (
   <>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light">
+      <ThemeProvider defaultTheme="dark">
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="home" replace />} />

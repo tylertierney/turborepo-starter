@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <>
       <Datatable<User>
-        className="mt-8 ml-8 md:max-w-3xl mb-60"
+        className="mt-8 md:max-w-3xl mb-60 text-xs"
         columns={[
           {
             headerName: 'ID',
