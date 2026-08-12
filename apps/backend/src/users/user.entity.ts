@@ -24,7 +24,7 @@ export class UserEntity {
   email: string = ''
 
   @Column()
-  password: string = ''
+  password!: string
 
   @CreateDateColumn()
   createdAt: Date = new Date()

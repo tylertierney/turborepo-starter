@@ -51,7 +51,7 @@ type IPaginationItem = 'ellipsis-prev' | 'ellipsis-next' | number
 const getPaginationItems = ({
   currentPage,
   totalPages,
-  buffer = 5,
+  buffer = 3,
 }: {
   currentPage: number
   totalPages: number
@@ -193,7 +193,7 @@ const TablePagination = ({
               setPaginationParams((prev) => ({
                 ...prev,
                 pageSize: num,
-                currentPage: Math.ceil(totalCount / num),
+                currentPage: Math.max(Math.ceil(totalCount / num), 1),
               }))
             }}
           >
@@ -246,7 +246,6 @@ export const Datatable = <T,>({
   className = '',
   ...rest
 }: DatatableProps<T> & HTMLAttributes<HTMLDivElement>) => {
-  console.log(error)
   return (
     <div className={`flex flex-col gap-2 ${className}`} {...rest}>
       <InputGroup className="self-end max-w-60">
@@ -313,12 +312,12 @@ export const Datatable = <T,>({
           </TableBody>
         </Table>
         {loading && (
-          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/50">
+          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/30">
             <Spinner className="size-6" />
           </div>
         )}
         {Boolean(error) && (
-          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/50 pt-6">
+          <div className="absolute w-full h-full top-0 left-0 flex flex-col items-center justify-center bg-accent/30 pt-6">
             {error}
           </div>
         )}

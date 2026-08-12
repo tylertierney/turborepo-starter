@@ -1,3 +1,4 @@
+import { Toaster } from '@repo/ui'
 import { createRoot } from 'react-dom/client'
 import './style.css'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
@@ -24,6 +25,7 @@ const App = () => (
             <Route index path="home" element={<Home />} />
           </Routes>
         </BrowserRouter>
+        <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
   </>

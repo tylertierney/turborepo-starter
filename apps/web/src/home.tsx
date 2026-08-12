@@ -1,7 +1,19 @@
-import { User } from '@repo/models'
+import { toast } from '@repo/ui'
+import {
+  Button,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@repo/ui'
+import { PaginatedResult, User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
 import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
+import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
+import { useDebouncedIsFetching } from './hooks/useDebouncedIsFetching'
 
 export default function Home() {
   const [datatableParams, setDatatableParams] = useState<DatatableParams>({
@@ -10,7 +22,12 @@ export default function Home() {
     search: '',
   })
 
-  const { data, isFetching, error } = useQuery({
+  const {
+    data: usersResult,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['users', JSON.stringify(datatableParams)],
     queryFn: async () => {
       const { pageSize, currentPage, search } = datatableParams
@@ -21,36 +38,38 @@ export default function Home() {
       })
 
       if (search) {
-        params.set('q', search)
+        params.set('search', search)
       }
 
       const queryString = '?' + params.toString()
 
-      try {
-        const data = await fetch('/api/users' + queryString)
-        const json = (await data.json()) as {
-          users: User[]
-          totalCount: number
-        }
-        return json
-      } catch (err) {
-        throw new Error(err as unknown as string)
-        console.error(err)
-        return { users: [], totalCount: 0 }
+      const res = await fetch('/api/users' + queryString)
+      if (!res.ok) {
+        toast.add({
+          type: 'error',
+          title: 'Error',
+          description: 'Failed to fetch users list',
+        })
+        throw new Error(`Server error: ${res.status}`)
       }
+
+      const json = (await res.json()) as PaginatedResult<User>
+      return json
     },
-    // placeholderData: (prev) => prev,
+    placeholderData: (prev) => prev,
   })
 
-  console.log(error)
+  const { data: users = [], meta } = usersResult || {}
 
-  const { users = [], totalCount = 0 } = data || {}
+  const isFetchingWithDebounce = useDebouncedIsFetching({
+    isFetching,
+    delay: 200,
+  })
 
   return (
     <>
-      <pre>{String(isFetching)}</pre>
       <Datatable<User>
-        className="md:max-w-3xl mb-60"
+        className="mt-8 ml-8 md:max-w-3xl mb-60"
         columns={[
           {
             headerName: 'ID',
@@ -94,11 +113,43 @@ export default function Home() {
           },
         ]}
         data={users}
-        totalCount={totalCount}
+        totalCount={meta?.totalCount ?? 0}
         params={datatableParams}
         setParams={setDatatableParams}
-        loading={isFetching}
-        error={error ? 'Something happened' : undefined}
+        loading={isFetchingWithDebounce}
+        error={
+          error ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <UserIcon />
+                </EmptyMedia>
+                <EmptyTitle>No Users Found</EmptyTitle>
+                <EmptyDescription>
+                  No users were found - or there was a network error. Try again
+                  momentarily.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent className="flex-row justify-center gap-2">
+                <Button onClick={() => refetch()} variant="outline">
+                  <RefreshCcw />
+                  Refresh
+                </Button>
+              </EmptyContent>
+              <Button
+                variant="link"
+                className="text-muted-foreground"
+                size="sm"
+                nativeButton={false}
+                render={
+                  <a>
+                    Or contact support <ArrowUpRightIcon />
+                  </a>
+                }
+              />
+            </Empty>
+          ) : undefined
+        }
       ></Datatable>
     </>
   )
