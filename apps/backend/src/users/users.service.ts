@@ -23,7 +23,15 @@ export class UsersService implements OnApplicationBootstrap {
     await this.usersRepository.clear()
 
     const users: UserEntity[] = Array(126).fill(null).map(mockUser)
-    await this.usersRepository.save(users)
+    const others = Array(10)
+      .fill(null)
+      .map(() =>
+        mockUser({
+          lastName: 'Tierney',
+        }),
+      )
+
+    await this.usersRepository.save([...users, ...others])
 
     this.logger.log(`Seeded ${users.length} users into the database.`)
   }
@@ -33,6 +41,7 @@ export class UsersService implements OnApplicationBootstrap {
     search?: string,
   ): Promise<PaginatedResult<UserEntity>> {
     const res = await paginate<UserEntity>(this.usersRepository, query, {
+      sortable: ['firstName', 'lastName', 'email', 'createdAt'],
       where: [
         {
           firstName: ILike(`%${search}%`),
@@ -44,9 +53,6 @@ export class UsersService implements OnApplicationBootstrap {
           email: ILike(`%${search}%`),
         },
       ],
-      order: {
-        createdAt: 'DESC',
-      },
       select: {
         id: true,
         firstName: true,

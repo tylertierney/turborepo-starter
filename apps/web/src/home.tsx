@@ -14,13 +14,17 @@ import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
 import { useDebouncedIsFetching } from './hooks/useDebouncedIsFetching'
+import { convertDatatableParamsToQueryString } from '../../../packages/ui/components/ui/datatable/datatable.utils'
 
 export default function Home() {
-  const [datatableParams, setDatatableParams] = useState<DatatableParams>({
-    pageSize: 10,
-    currentPage: 1,
-    search: '',
-  })
+  const [datatableParams, setDatatableParams] = useState<DatatableParams<User>>(
+    {
+      pageSize: 10,
+      currentPage: 1,
+      search: '',
+      sort: [],
+    },
+  )
 
   const {
     data: usersResult,
@@ -30,18 +34,7 @@ export default function Home() {
   } = useQuery({
     queryKey: ['users', JSON.stringify(datatableParams)],
     queryFn: async () => {
-      const { pageSize, currentPage, search } = datatableParams
-
-      const params = new URLSearchParams({
-        pageSize: String(pageSize),
-        page: String(currentPage),
-      })
-
-      if (search) {
-        params.set('search', search)
-      }
-
-      const queryString = '?' + params.toString()
+      const queryString = convertDatatableParamsToQueryString(datatableParams)
 
       const res = await fetch('/api/users' + queryString)
       if (!res.ok) {
@@ -69,39 +62,36 @@ export default function Home() {
   return (
     <>
       <Datatable<User>
-        className="mt-8 md:max-w-3xl mb-60 text-xs"
+        // className="md:max-w-3xl"
+        className="mb-60 md:w-full"
         columns={[
           {
             headerName: 'ID',
             field: 'id',
+            cellRenderer: ({ id }) => <code className="text-xs">{id}</code>,
             style: {
-              width: '10%',
+              width: '80px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              minWidth: '80px',
+              maxWidth: '80px',
+              paddingRight: '20px',
             },
-            cellRenderer: ({ id }) => <code className="text-xs">{id}</code>,
           },
           {
             headerName: 'First Name',
             field: 'firstName',
+            sortable: true,
           },
           {
             headerName: 'Last Name',
             field: 'lastName',
-          },
-          {
-            headerName: 'Created At',
-            field: 'createdAt',
-            cellRenderer: ({ createdAt }) =>
-              new Date(createdAt).toLocaleDateString('en-us'),
+            sortable: true,
           },
           {
             headerName: 'Email',
             field: 'email',
-            style: {
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
+            sortable: true,
             cellRenderer: ({ email }) => (
               <a
                 className="text-indigo-500 dark:text-indigo-300 no-underline hover:underline"
@@ -111,12 +101,27 @@ export default function Home() {
               </a>
             ),
           },
+          {
+            headerName: 'Created At',
+            field: 'createdAt',
+            sortable: true,
+            cellRenderer: ({ createdAt }) =>
+              new Date(createdAt).toLocaleDateString('en-us'),
+          },
         ]}
         data={users}
         totalCount={meta?.totalCount ?? 0}
         params={datatableParams}
         setParams={setDatatableParams}
         loading={isFetchingWithDebounce}
+        // tableStyle={{ tableLayout: '' }}
+        tableClassName="sm:table-layout-fixed"
+        defaultColDef={{
+          style: {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          },
+        }}
         error={
           error ? (
             <Empty>

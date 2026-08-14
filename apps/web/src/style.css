@@ -29,6 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 @theme inline {
@@ -153,4 +154,12 @@ body {
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+}
+
+@utility table-layout-fixed {
+  table-layout: fixed;
+}
+
+@utility table-layout-auto {
+  table-layout: auto;
 }

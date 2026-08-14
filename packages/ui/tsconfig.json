@@ -6,6 +6,7 @@
   "exclude": ["node_modules"],
   "compilerOptions": {
     "strictNullChecks": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
   }
 }

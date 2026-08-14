@@ -1,0 +1,15 @@
+.th {
+  .sortBtn {
+    visibility: hidden;
+  }
+
+  &:hover {
+    .sortBtn {
+      visibility: visible;
+    }
+  }
+
+  .sortBtn.isSorted {
+    visibility: visible;
+  }
+}

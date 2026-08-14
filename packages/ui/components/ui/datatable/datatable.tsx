@@ -1,16 +1,18 @@
-import { Spinner } from './spinner'
+import { mergeColDefs } from './datatable.utils'
+import { Spinner } from '../spinner'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from './input-group'
+} from '../input-group'
 import {
   CSSProperties,
   Dispatch,
   HTMLAttributes,
   ReactNode,
   SetStateAction,
+  useState,
 } from 'react'
 import {
   Pagination,
@@ -20,7 +22,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from './pagination'
+} from '../pagination'
 import {
   Table,
   TableBody,
@@ -28,8 +30,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './table'
-import { Search, XIcon } from 'lucide-react'
+} from '../table'
+import { ArrowDown, ArrowUp, Search, XIcon } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -38,7 +40,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from './select'
+} from '../select'
+import styles from './datatable.module.scss'
+import { Button } from '../button'
 
 const range = (start: number, end: number) => {
   return Array(end - start)
@@ -74,10 +78,6 @@ const getPaginationItems = ({
       ...range(totalPages + 1 - buffer, totalPages + 1),
     ]
   }
-
-  // return Array(totalPages)
-  //   .fill(null)
-  //   .map((_, idx) => idx + 1)
 
   return [
     1,
@@ -122,7 +122,12 @@ const TablePagination = ({
     <Pagination className={className}>
       <PaginationContent className="gap-3 sm:gap-8">
         <span className="text-sm text-muted-foreground">
-          {startRowIdx} - {endRowIdx} of {totalCount}
+          <span className="hidden sm:inline">
+            {startRowIdx} - {endRowIdx} of {totalCount}
+          </span>
+          <span className="sm:hidden">
+            {currentPage} / {totalPages}
+          </span>
         </span>
         <div className="flex items-center gap-1">
           <PaginationItem>
@@ -140,35 +145,45 @@ const TablePagination = ({
               text=""
             />
           </PaginationItem>
-          {paginationItems.map((n) => (
-            <PaginationItem key={n}>
-              {typeof n === 'string' ? (
-                <PaginationEllipsis
-                  onClick={() =>
-                    setPaginationParams((prev) => {
-                      console.log(prev)
-                      return {
+          <div className="hidden sm:flex items-center gap-1">
+            {paginationItems.map((n) => (
+              <PaginationItem key={n}>
+                {typeof n === 'string' ? (
+                  <PaginationEllipsis
+                    onClick={() =>
+                      setPaginationParams((prev) => {
+                        console.log(prev)
+                        return {
+                          ...prev,
+                          currentPage:
+                            n === 'ellipsis-next'
+                              ? Math.min(totalPages, prev.currentPage + buffer)
+                              : Math.max(1, prev.currentPage - buffer),
+                        }
+                      })
+                    }
+                  />
+                ) : (
+                  <PaginationLink
+                    isActive={n === currentPage}
+                    onClick={() =>
+                      setPaginationParams((prev) => ({
                         ...prev,
-                        currentPage:
-                          n === 'ellipsis-next'
-                            ? Math.min(totalPages, prev.currentPage + buffer)
-                            : Math.max(1, prev.currentPage - buffer),
-                      }
-                    })
-                  }
-                />
-              ) : (
-                <PaginationLink
-                  isActive={n === currentPage}
-                  onClick={() =>
-                    setPaginationParams((prev) => ({ ...prev, currentPage: n }))
-                  }
-                >
-                  {n}
-                </PaginationLink>
-              )}
+                        currentPage: n,
+                      }))
+                    }
+                  >
+                    {n}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
+          </div>
+          <div className="sm:hidden items-center gap-1">
+            <PaginationItem>
+              <PaginationLink isActive={true}>{currentPage}</PaginationLink>
             </PaginationItem>
-          ))}
+          </div>
           <PaginationItem>
             <PaginationNext
               onClick={() => {
@@ -186,15 +201,24 @@ const TablePagination = ({
           </PaginationItem>
         </div>
         <label className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Items per page</span>
+          <span className="text-sm text-muted-foreground">
+            <span className="hidden sm:inline">Items per page</span>
+            <span className="sm:hidden">Show</span>
+          </span>
           <Select<number>
             value={pageSize}
             onValueChange={(n) => {
               const num = n as number
+              const newTotalPages = Math.max(Math.ceil(totalCount / num), 1)
+
               setPaginationParams((prev) => ({
                 ...prev,
                 pageSize: num,
-                currentPage: Math.max(Math.ceil(totalCount / num), 1),
+                // currentPage: Math.max(Math.ceil(totalCount / num), 1),
+                currentPage:
+                  prev.currentPage > newTotalPages
+                    ? newTotalPages
+                    : prev.currentPage,
               }))
             }}
           >
@@ -223,18 +247,32 @@ export type Column<T> = {
   headerName: string
   style?: CSSProperties
   cellRenderer?: (data: T) => ReactNode
+  hidden?: boolean
+  headerCellStyle?: CSSProperties
+  sortable?: boolean
 }
 
-export type DatatableParams = { search?: string } & PaginationParams
+export type ColumnWithId<T> = Column<T> & { id: number }
+
+export type DatatableParams<T> = {
+  search?: string
+  sort: Array<{
+    by: keyof T
+    order: 'desc' | 'asc'
+  }>
+} & PaginationParams
 
 type DatatableProps<T> = {
   columns: Column<T>[]
   data: T[]
   totalCount: number
-  params: DatatableParams
-  setParams: Dispatch<SetStateAction<DatatableParams>>
+  params: DatatableParams<T>
+  setParams: Dispatch<SetStateAction<DatatableParams<T>>>
   loading?: boolean
   error?: ReactNode
+  tableStyle?: CSSProperties
+  tableClassName?: string
+  defaultColDef?: Partial<Column<T>>
 }
 export const Datatable = <T,>({
   columns = [],
@@ -245,8 +283,16 @@ export const Datatable = <T,>({
   loading = false,
   error,
   className = '',
+  tableStyle = {},
+  tableClassName = '',
+  defaultColDef = {},
   ...rest
 }: DatatableProps<T> & HTMLAttributes<HTMLDivElement>) => {
+  const [cols] = useState<ColumnWithId<T>[]>(
+    columns.map((c, idx) => ({ ...c, id: idx })),
+  )
+  const visibleCols = cols.filter((c) => !c.hidden)
+
   return (
     <div className={`flex flex-col gap-4 ${className}`} {...rest}>
       <div className="flex px-2 justify-end">
@@ -274,6 +320,7 @@ export const Datatable = <T,>({
               onClick={() => {
                 setParams((prev) => ({ ...prev, search: '', currentPage: 1 }))
               }}
+              className={!params.search ? 'hidden' : ''}
             >
               <XIcon />
             </InputGroupButton>
@@ -284,31 +331,107 @@ export const Datatable = <T,>({
         className="relative flex flex-col"
         style={{
           minHeight: `calc(var(--spacing) * 10 * ${params.pageSize + 1})`,
+          //
+          overflowX: 'auto',
+          maxWidth: '100%',
+          width: '100%',
         }}
       >
-        <Table style={{ tableLayout: 'fixed' }}>
+        <Table style={tableStyle} className={tableClassName}>
           <TableHeader>
             <TableRow className="h-10">
-              {columns.map(({ headerName, style = {} }, idx) => (
-                <TableHead key={idx + headerName} style={style}>
-                  <b>{headerName}</b>
-                </TableHead>
-              ))}
+              {visibleCols.map((colDef, idx) => {
+                const {
+                  headerName,
+                  field,
+                  style = {},
+                  headerCellStyle = {},
+                  sortable,
+                } = mergeColDefs(defaultColDef, colDef)
+
+                const sortDir = params.sort?.filter(
+                  ({ by }) => by === field,
+                )?.[0]?.order
+
+                const isSorted = Boolean(sortDir)
+
+                return (
+                  <TableHead
+                    key={idx + headerName}
+                    className={`hover:bg-accent-foreground/5 ${styles.th}`}
+                    style={{
+                      ...style,
+                      ...headerCellStyle,
+                    }}
+                  >
+                    <div className="flex items-center justify-between ">
+                      <b>{headerName}</b>
+
+                      {sortable && (
+                        <>
+                          {/* {sortDir &&
+                            (sortDir === 'asc' ? <ArrowUp /> : <ArrowDown />)} */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`text-muted-foreground hover:text-muted-foreground transition-none ${styles.sortBtn} ${isSorted ? styles.isSorted : ''}`}
+                            onClick={() =>
+                              setParams((prev) => {
+                                const filteredSort = prev.sort.filter(
+                                  ({ by }) => by !== field,
+                                )
+                                if (sortDir === 'desc')
+                                  return { ...prev, sort: filteredSort }
+
+                                return {
+                                  ...prev,
+                                  sort: [
+                                    ...filteredSort,
+                                    {
+                                      by: field,
+                                      order: sortDir === 'asc' ? 'desc' : 'asc',
+                                    },
+                                  ],
+                                }
+                              })
+                            }
+                          >
+                            {sortDir === 'asc' ? (
+                              <ArrowUp
+                                className={`${isSorted ? 'text-primary' : ''}`}
+                              />
+                            ) : (
+                              <ArrowDown
+                                className={`${isSorted ? 'text-primary' : ''}`}
+                              />
+                            )}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </TableHead>
+                )
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row, idx) => {
               return (
                 <TableRow key={idx} className="h-10">
-                  {columns.map(({ field, style = {}, cellRenderer }, idx) => {
-                    return (
-                      <TableCell key={idx} style={style}>
-                        {cellRenderer
-                          ? cellRenderer(row)
-                          : (row[field] as string)}
-                      </TableCell>
-                    )
-                  })}
+                  {visibleCols.map(
+                    ({ field, style = {}, cellRenderer }, idx) => {
+                      return (
+                        <TableCell
+                          key={idx}
+                          style={{ ...defaultColDef.style, ...style }}
+                        >
+                          {cellRenderer?.(row) ??
+                            defaultColDef.cellRenderer?.(row) ??
+                            (row[field] as string)}
+                        </TableCell>
+                      )
+                    },
+                  )}
                 </TableRow>
               )
             })}

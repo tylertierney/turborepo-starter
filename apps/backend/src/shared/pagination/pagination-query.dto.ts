@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, Max, Min } from 'class-validator'
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
@@ -28,4 +28,23 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(100)
   pageSize?: number = 10
+
+  @ApiPropertyOptional({
+    description:
+      'Comma-separated columns to sort by. Prefix a column with "-" for descending order.',
+    examples: {
+      ascending: {
+        value: 'createdAt',
+      },
+      descending: {
+        value: '-createdAt',
+      },
+      multiple: {
+        value: '-createdAt,email',
+      },
+    },
+  })
+  @IsOptional()
+  @IsString()
+  sort?: string
 }
