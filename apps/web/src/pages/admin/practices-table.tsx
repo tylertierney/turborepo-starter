@@ -14,9 +14,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
-import { useDebouncedIsFetching } from './hooks/useDebouncedIsFetching'
+import { useDebouncedIsFetching } from '../../hooks/useDebouncedIsFetching'
 
-export default function Home() {
+export default function PracticesTable() {
   const [datatableParams, setDatatableParams] = useState<DatatableParams<User>>(
     {
       pageSize: 10,

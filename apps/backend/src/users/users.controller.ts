@@ -10,7 +10,7 @@ import {
 import { UsersService } from './users.service'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
-import { mockUser, UserEntity } from './user.entity'
+import { mockUserEntity, UserEntity } from './user.entity'
 import { PaginatedResult } from '@repo/models'
 
 export type PaginationQuery = {
@@ -28,7 +28,7 @@ export class UsersController {
       data: Array(10)
         .fill(null)
         .map(() => {
-          const u = mockUser()
+          const u = mockUserEntity()
           return {
             id: u.id,
             firstName: u.firstName,

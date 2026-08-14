@@ -3,8 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { PracticeEntity } from '../practices/practice.entity'
 
 @Entity()
 export class UserEntity {
@@ -12,7 +14,7 @@ export class UserEntity {
     Object.assign(this, partial)
   }
   @PrimaryGeneratedColumn('uuid')
-  id: string = ''
+  id!: string
 
   @Column()
   firstName: string = ''
@@ -31,9 +33,14 @@ export class UserEntity {
 
   @Column()
   active: boolean = true
+
+  @ManyToMany(() => PracticeEntity, practice => practice.users)
+  practices!: PracticeEntity[]
 }
 
-export const mockUser = (partial: Partial<UserEntity> = {}): UserEntity => {
+export const mockUserEntity = (
+  partial: Partial<UserEntity> = {},
+): UserEntity => {
   const temp = {
     ...randUser(),
     password: randPassword(),

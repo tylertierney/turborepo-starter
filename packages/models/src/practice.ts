@@ -1,0 +1,46 @@
+import {
+  randCity,
+  randDirection,
+  randLastName,
+  randPastDate,
+  randState,
+  randUuid,
+} from '@ngneat/falso'
+
+export const randPracticeName = () => {
+  const getPrefix = () => {
+    const opts = [randCity(), randDirection(), randState(), randLastName()]
+    return opts[~~(Math.random() * opts.length)]
+  }
+
+  const getSuffix = () => {
+    const opts = [
+      'Eye Care',
+      'Optometry',
+      'Eye Specialists',
+      'Eye',
+      'Eye Center',
+      'Optical',
+    ]
+    return opts[~~(Math.random() * opts.length)]
+  }
+
+  return getPrefix() + ' ' + getSuffix()
+}
+
+export type Practice = {
+  id: string
+  name: string
+  image: string
+  createdAt: Date | string
+  active: boolean
+}
+
+export const mockPractice = (partial: Partial<Practice> = {}): Practice => ({
+  id: randUuid(),
+  name: randPracticeName(),
+  image: 'https://picsum.photos/seed/picsum/60/60',
+  active: true,
+  createdAt: randPastDate(),
+  ...partial,
+})

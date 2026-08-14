@@ -6,6 +6,7 @@ import Home from './home'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from './context/ThemeProvider'
 import { NavLayout } from './layout/NavLayout'
+import { Admin } from './pages/admin/admin'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="home" replace />} />
             <Route element={<NavLayout />}>
               <Route index path="home" element={<Home />} />
+              <Route path="admin" element={<Admin />} />
               <Route
                 path="about"
                 element={

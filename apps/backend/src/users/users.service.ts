@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { mockUser, UserEntity } from './user.entity'
+import { mockUserEntity, UserEntity } from './user.entity'
 import { ILike, Repository } from 'typeorm'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
 import { PaginatedResult } from '@repo/models'
@@ -22,16 +22,9 @@ export class UsersService implements OnApplicationBootstrap {
   private resetAndSeedDatabase = async () => {
     await this.usersRepository.clear()
 
-    const users: UserEntity[] = Array(126).fill(null).map(mockUser)
-    const others = Array(10)
-      .fill(null)
-      .map(() =>
-        mockUser({
-          lastName: 'Tierney',
-        }),
-      )
+    const users: UserEntity[] = Array(126).fill(null).map(mockUserEntity)
 
-    await this.usersRepository.save([...users, ...others])
+    await this.usersRepository.save(users)
 
     this.logger.log(`Seeded ${users.length} users into the database.`)
   }
