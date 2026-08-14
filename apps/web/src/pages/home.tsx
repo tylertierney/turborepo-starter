@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
-import { useDebouncedIsFetching } from './hooks/useDebouncedIsFetching'
+import { useDebouncedIsFetching } from '../hooks/useDebouncedIsFetching'
 
 export default function Home() {
   const [datatableParams, setDatatableParams] = useState<DatatableParams<User>>(
@@ -60,9 +60,8 @@ export default function Home() {
   })
 
   return (
-    <>
+    <div className="flex flex-col pt-8 sm:px-8 sm:items-center md:max-w-6xl">
       <Datatable<User>
-        // className="md:max-w-3xl"
         className="mb-60 md:w-full"
         columns={[
           {
@@ -93,10 +92,7 @@ export default function Home() {
             field: 'email',
             sortable: true,
             cellRenderer: ({ email }) => (
-              <a
-                className="text-indigo-500 dark:text-indigo-300 no-underline hover:underline"
-                href={`mailto:${email}`}
-              >
+              <a className="text-link" href={`mailto:${email}`}>
                 {email}
               </a>
             ),
@@ -156,6 +152,6 @@ export default function Home() {
           ) : undefined
         }
       ></Datatable>
-    </>
+    </div>
   )
 }

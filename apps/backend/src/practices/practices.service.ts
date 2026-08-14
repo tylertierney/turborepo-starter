@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ILike, Repository } from 'typeorm'
-import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
+import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { PaginatedResult } from '@repo/models'
-import { paginate } from '../shared/pagination/pagination.util'
-import { mockPracticeEntity, PracticeEntity } from './practice.entity'
+import { paginate } from '../shared/pagination/pagination.util.js'
+import { mockPracticeEntity, PracticeEntity } from './practice.entity.js'
 
 @Injectable()
 export class PracticesService implements OnApplicationBootstrap {
@@ -51,7 +51,11 @@ export class PracticesService implements OnApplicationBootstrap {
     const onlySelectedFields: PaginatedResult<PracticeEntity> = {
       ...res,
       data: res.data.map(p => {
-        const fieldsToKeep = new Set<keyof PracticeEntity>(['name', 'image'])
+        const fieldsToKeep = new Set<keyof PracticeEntity>([
+          'id',
+          'name',
+          'image',
+        ])
         return Object.fromEntries(
           Object.entries(p).filter(([key]) =>
             fieldsToKeep.has(key as keyof PracticeEntity),
@@ -61,5 +65,9 @@ export class PracticesService implements OnApplicationBootstrap {
     }
 
     return onlySelectedFields
+  }
+
+  async findOne(id: string): Promise<PracticeEntity | null> {
+    return this.practicesRepository.findOneBy({ id })
   }
 }

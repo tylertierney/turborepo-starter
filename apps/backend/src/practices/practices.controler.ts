@@ -1,8 +1,15 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common'
-import { PracticesService } from './practices.service'
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common'
+import { PracticesService } from './practices.service.js'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
-import { mockPracticeEntity, PracticeEntity } from './practice.entity'
-import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
+import { mockPracticeEntity, PracticeEntity } from './practice.entity.js'
+import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { PaginatedResult } from '@repo/models'
 
 @Controller('practices')
@@ -43,5 +50,14 @@ export class PracticesController {
     search = '',
   ) {
     return this.practicesService.findAll(paginationQuery, search)
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const practice = await this.practicesService.findOne(id)
+    if (!practice) {
+      throw new NotFoundException(`Practice with ID ${id} not found`)
+    }
+    return practice
   }
 }

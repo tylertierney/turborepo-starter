@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
+import { AppController } from './app.controller.js'
+import { AppService } from './app.service.js'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { UsersModule } from './users/users.module'
-import { PracticesModule } from './practices/practices.module'
+import { UsersModule } from './users/users.module.js'
+import { PracticesModule } from './practices/practices.module.js'
 
 @Module({
   imports: [

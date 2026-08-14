@@ -6,7 +6,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { UserEntity } from '../users/user.entity'
+import { UserEntity } from '../users/user.entity.js'
 import { mockPractice } from '@repo/models'
 
 @Entity()
@@ -23,6 +23,9 @@ export class PracticeEntity {
 
   @Column()
   image!: string
+
+  @Column()
+  url!: string
 
   @CreateDateColumn()
   createdAt: Date = new Date()

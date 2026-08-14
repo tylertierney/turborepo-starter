@@ -4,6 +4,7 @@ import {
   randLastName,
   randPastDate,
   randState,
+  randUrl,
   randUuid,
 } from '@ngneat/falso'
 
@@ -21,6 +22,7 @@ export const randPracticeName = () => {
       'Eye',
       'Eye Center',
       'Optical',
+      'Eye Institute',
     ]
     return opts[~~(Math.random() * opts.length)]
   }
@@ -32,6 +34,7 @@ export type Practice = {
   id: string
   name: string
   image: string
+  url: string
   createdAt: Date | string
   active: boolean
 }
@@ -39,7 +42,8 @@ export type Practice = {
 export const mockPractice = (partial: Partial<Practice> = {}): Practice => ({
   id: randUuid(),
   name: randPracticeName(),
-  image: 'https://picsum.photos/seed/picsum/60/60',
+  image: `https://picsum.photos/seed/${randUuid()}/60/60`,
+  url: randUrl(),
   active: true,
   createdAt: randPastDate(),
   ...partial,

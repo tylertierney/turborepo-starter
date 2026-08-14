@@ -1,11 +1,17 @@
 {
   "name": "@repo/models",
   "version": "0.0.0",
+  "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./index.d.ts"
+    }
   },
   "license": "MIT",
   "scripts": {
+    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint \"**/*.ts\""
   },
   "dependencies": {},

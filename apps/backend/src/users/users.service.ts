@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { mockUserEntity, UserEntity } from './user.entity'
+import { mockUserEntity, UserEntity } from './user.entity.js'
 import { ILike, Repository } from 'typeorm'
-import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
+import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { PaginatedResult } from '@repo/models'
-import { paginate } from '../shared/pagination/pagination.util'
+import { paginate } from '../shared/pagination/pagination.util.js'
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {

@@ -6,7 +6,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { PracticeEntity } from '../practices/practice.entity'
+import { PracticeEntity } from '../practices/practice.entity.js'
 
 @Entity()
 export class UserEntity {

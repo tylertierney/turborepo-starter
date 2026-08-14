@@ -1,10 +1,18 @@
 import {
   Button,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -12,9 +20,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@repo/ui'
-import { Outlet } from 'react-router'
+import { Link, Outlet } from 'react-router'
 import { useTheme } from '../context/ThemeProvider'
-import { ChevronDown, MenuIcon } from 'lucide-react'
+import { ChevronDown, House, MenuIcon, Plus, Shield } from 'lucide-react'
 
 const themeSvg = (
   <svg
@@ -62,10 +70,55 @@ export const NavLayout = () => {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Application</SidebarGroupLabel>
+              <SidebarGroupAction>
+                <Plus /> <span className="sr-only">Add Project</span>
+              </SidebarGroupAction>
+              <SidebarGroupContent></SidebarGroupContent>
+            </SidebarGroup>
+            <Collapsible defaultOpen className="group/collapsible">
+              <SidebarGroup>
+                <SidebarGroupLabel render={<CollapsibleTrigger />}>
+                  Help
+                  <ChevronDown className="ml-auto transition-transform group-data-open/collapsible:rotate-180" />
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent />
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+            <SidebarMenu>
+              {[
+                {
+                  name: 'Home',
+                  url: 'home',
+                  icon: () => <House />,
+                },
+                {
+                  name: 'Admin',
+                  url: 'admin',
+                  icon: () => <Shield />,
+                },
+              ].map((project) => (
+                <SidebarMenuItem key={project.name}>
+                  <SidebarMenuButton
+                    render={
+                      <Link className="flex items-center" to={project.url} />
+                    }
+                  >
+                    <project.icon />
+                    <span>{project.name}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
         </Sidebar>
         <div className="flex flex-col grow max-w-full sm:items-center">
-          <nav className="sticky top-0 left-0 w-full z-10 flex items-center justify-end py-4 px-8 border-b bg-background/30 backdrop-blur-xl ">
-            <SidebarTrigger className="mr-auto sm:hidden" variant="outline">
+          <nav className="h-16 px-4 sticky top-0 left-0 w-full z-10 flex items-center justify-end border-b bg-background/30 backdrop-blur-xl ">
+            <SidebarTrigger className="mr-auto" variant="outline">
               <MenuIcon />
             </SidebarTrigger>
             <Button
@@ -78,9 +131,8 @@ export const NavLayout = () => {
               {themeSvg}
             </Button>
           </nav>
-          <div className="flex flex-col pt-8 sm:px-8 sm:items-center md:max-w-6xl">
-            <Outlet />
-          </div>
+
+          <Outlet />
         </div>
       </SidebarProvider>
     </>

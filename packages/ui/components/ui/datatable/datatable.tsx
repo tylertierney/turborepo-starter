@@ -1,12 +1,8 @@
 import { mergeColDefs } from './datatable.utils'
 import { Spinner } from '../spinner'
+import { SearchInput } from '../input-group'
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '../input-group'
-import {
+  ComponentProps,
   CSSProperties,
   Dispatch,
   HTMLAttributes,
@@ -31,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '../table'
-import { ArrowDown, ArrowUp, Search, XIcon } from 'lucide-react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -273,6 +269,7 @@ type DatatableProps<T> = {
   tableStyle?: CSSProperties
   tableClassName?: string
   defaultColDef?: Partial<Column<T>>
+  header?: ReactNode
 }
 export const Datatable = <T,>({
   columns = [],
@@ -287,7 +284,7 @@ export const Datatable = <T,>({
   tableClassName = '',
   defaultColDef = {},
   ...rest
-}: DatatableProps<T> & HTMLAttributes<HTMLDivElement>) => {
+}: DatatableProps<T> & ComponentProps<'div'>) => {
   const [cols] = useState<ColumnWithId<T>[]>(
     columns.map((c, idx) => ({ ...c, id: idx })),
   )
@@ -296,42 +293,21 @@ export const Datatable = <T,>({
   return (
     <div className={`flex flex-col gap-4 ${className}`} {...rest}>
       <div className="flex px-2 justify-end">
-        <InputGroup className="max-w-50">
-          <InputGroupInput
-            type="search"
-            value={params.search ?? ''}
-            onChange={(e) => {
-              setParams((prev) => ({
-                ...prev,
-                search: e.target.value,
-                currentPage: 1,
-              }))
-            }}
-            placeholder="Search"
-          />
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          <InputGroupAddon align="inline-end">
-            <InputGroupButton
-              aria-label="reset-search"
-              title="reset-search"
-              size="icon-xs"
-              onClick={() => {
-                setParams((prev) => ({ ...prev, search: '', currentPage: 1 }))
-              }}
-              className={!params.search ? 'hidden' : ''}
-            >
-              <XIcon />
-            </InputGroupButton>
-          </InputGroupAddon>
-        </InputGroup>
+        <SearchInput
+          value={params.search ?? ''}
+          onChange={(e) => {
+            setParams((prev) => ({
+              ...prev,
+              search: e.target.value,
+              currentPage: 1,
+            }))
+          }}
+        />
       </div>
       <div
         className="relative flex flex-col"
         style={{
           minHeight: `calc(var(--spacing) * 10 * ${params.pageSize + 1})`,
-          //
           overflowX: 'auto',
           maxWidth: '100%',
           width: '100%',

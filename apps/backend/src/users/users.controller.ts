@@ -7,10 +7,10 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common'
-import { UsersService } from './users.service'
+import { UsersService } from './users.service.js'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
-import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto'
-import { mockUserEntity, UserEntity } from './user.entity'
+import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
+import { mockUserEntity, UserEntity } from './user.entity.js'
 import { PaginatedResult } from '@repo/models'
 
 export type PaginationQuery = {

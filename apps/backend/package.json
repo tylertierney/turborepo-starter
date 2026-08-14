@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.1",
+  "type": "module",
   "description": "",
   "author": "",
   "private": true,
@@ -31,7 +32,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sql.js": "^1.14.1",
-    "typeorm": "^0.3.31"
+    "typeorm": "^0.3.31",
+    "@repo/models": "*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

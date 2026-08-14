@@ -4,7 +4,7 @@ import {
   ObjectLiteral,
   FindOptionsOrder,
 } from 'typeorm'
-import { PaginationQueryDto } from './pagination-query.dto'
+import { PaginationQueryDto } from './pagination-query.dto.js'
 import { PaginatedResult } from '@repo/models'
 import { BadRequestException } from '@nestjs/common'
 

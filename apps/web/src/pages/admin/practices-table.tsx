@@ -9,50 +9,50 @@ import {
   EmptyTitle,
   convertDatatableParamsToQueryString,
 } from '@repo/ui'
-import { PaginatedResult, User } from '@repo/models'
+import { PaginatedResult, Practice } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
 import { Datatable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
-import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
+import { ArrowUpRightIcon, RefreshCcw, Building } from 'lucide-react'
 import { useDebouncedIsFetching } from '../../hooks/useDebouncedIsFetching'
 
 export default function PracticesTable() {
-  const [datatableParams, setDatatableParams] = useState<DatatableParams<User>>(
-    {
-      pageSize: 10,
-      currentPage: 1,
-      search: '',
-      sort: [],
-    },
-  )
+  const [datatableParams, setDatatableParams] = useState<
+    DatatableParams<Practice>
+  >({
+    pageSize: 10,
+    currentPage: 1,
+    search: '',
+    sort: [],
+  })
 
   const {
-    data: usersResult,
+    data: practicesResult,
     isFetching,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['users', JSON.stringify(datatableParams)],
+    queryKey: ['practices', JSON.stringify(datatableParams)],
     queryFn: async () => {
       const queryString = convertDatatableParamsToQueryString(datatableParams)
 
-      const res = await fetch('/api/users' + queryString)
+      const res = await fetch('/api/practices' + queryString)
       if (!res.ok) {
         toast.add({
           type: 'error',
           title: 'Error',
-          description: 'Failed to fetch users list',
+          description: 'Failed to fetch practices list',
         })
         throw new Error(`Server error: ${res.status}`)
       }
 
-      const json = (await res.json()) as PaginatedResult<User>
+      const json = (await res.json()) as PaginatedResult<Practice>
       return json
     },
     placeholderData: (prev) => prev,
   })
 
-  const { data: users = [], meta } = usersResult || {}
+  const { data: practices = [], meta } = practicesResult || {}
 
   const isFetchingWithDebounce = useDebouncedIsFetching({
     isFetching,
@@ -61,45 +61,14 @@ export default function PracticesTable() {
 
   return (
     <>
-      <Datatable<User>
+      <Datatable<Practice>
         // className="md:max-w-3xl"
         className="mb-60 md:w-full"
         columns={[
           {
-            headerName: 'ID',
-            field: 'id',
-            cellRenderer: ({ id }) => <code className="text-xs">{id}</code>,
-            style: {
-              width: '80px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              minWidth: '80px',
-              maxWidth: '80px',
-              paddingRight: '20px',
-            },
-          },
-          {
-            headerName: 'First Name',
-            field: 'firstName',
+            headerName: 'Name',
+            field: 'name',
             sortable: true,
-          },
-          {
-            headerName: 'Last Name',
-            field: 'lastName',
-            sortable: true,
-          },
-          {
-            headerName: 'Email',
-            field: 'email',
-            sortable: true,
-            cellRenderer: ({ email }) => (
-              <a
-                className="text-indigo-500 dark:text-indigo-300 no-underline hover:underline"
-                href={`mailto:${email}`}
-              >
-                {email}
-              </a>
-            ),
           },
           {
             headerName: 'Created At',
@@ -109,12 +78,11 @@ export default function PracticesTable() {
               new Date(createdAt).toLocaleDateString('en-us'),
           },
         ]}
-        data={users}
+        data={practices}
         totalCount={meta?.totalCount ?? 0}
         params={datatableParams}
         setParams={setDatatableParams}
         loading={isFetchingWithDebounce}
-        // tableStyle={{ tableLayout: '' }}
         tableClassName="sm:table-layout-fixed"
         defaultColDef={{
           style: {
@@ -127,7 +95,7 @@ export default function PracticesTable() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <UserIcon />
+                  <Building />
                 </EmptyMedia>
                 <EmptyTitle>No Users Found</EmptyTitle>
                 <EmptyDescription>

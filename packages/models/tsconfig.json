@@ -1,8 +1,17 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
-  "include": ["."],
-  "exclude": ["node_modules"],
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strictNullChecks": true
-  }
+  },
+  "include": ["index.ts", "src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

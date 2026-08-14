@@ -1,3 +1,3 @@
-export * from './src/user'
-export * from './src/paginated-result'
-export * from './src/practice'
+export * from './src/user.js'
+export * from './src/paginated-result.js'
+export * from './src/practice.js'

@@ -1,12 +1,9 @@
-import { Card } from '@repo/ui'
-import UsersTable from './users-table'
+import { Outlet } from 'react-router'
 
 export const Admin = () => {
   return (
-    <div className="flex">
-      <Card>
-        <UsersTable />
-      </Card>
+    <div className="flex w-full h-[calc(100vh-4rem)]">
+      <Outlet />
     </div>
   )
 }
