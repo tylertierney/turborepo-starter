@@ -1,73 +1,71 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { ILike, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { PaginatedResult } from '@repo/models'
 import { paginate } from '../shared/pagination/pagination.util.js'
-import { mockPracticeEntity, PracticeEntity } from './practice.entity.js'
+import { PracticeEntity } from './practice.entity.js'
+import { UserEntity } from '../users/user.entity.js'
 
 @Injectable()
-export class PracticesService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(PracticesService.name)
-
+export class PracticesService {
   constructor(
     @InjectRepository(PracticeEntity)
     private practicesRepository: Repository<PracticeEntity>,
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
   ) {}
-
-  async onApplicationBootstrap() {
-    await this.resetAndSeedDatabase()
-  }
-
-  private resetAndSeedDatabase = async () => {
-    await this.practicesRepository.clear()
-
-    const practices: PracticeEntity[] = Array(26)
-      .fill(null)
-      .map(mockPracticeEntity)
-
-    await this.practicesRepository.save(practices)
-
-    this.logger.log(`Seeded ${practices.length} practices into the database.`)
-  }
 
   async findAll(
     query: PaginationQueryDto,
     search?: string,
   ): Promise<PaginatedResult<PracticeEntity>> {
-    const res = await paginate<PracticeEntity>(
-      this.practicesRepository,
-      query,
-      {
-        sortable: ['name', 'createdAt'],
-        where: [
-          {
-            name: ILike(`%${search}%`),
-          },
-        ],
-      },
-    )
+    const qb = this.practicesRepository.createQueryBuilder('practice')
 
-    const onlySelectedFields: PaginatedResult<PracticeEntity> = {
-      ...res,
-      data: res.data.map(p => {
-        const fieldsToKeep = new Set<keyof PracticeEntity>([
-          'id',
-          'name',
-          'image',
-        ])
-        return Object.fromEntries(
-          Object.entries(p).filter(([key]) =>
-            fieldsToKeep.has(key as keyof PracticeEntity),
-          ),
-        ) as PracticeEntity
-      }),
+    if (search) {
+      qb.andWhere(
+        `(practice.name LIKE :search
+        OR practice.url LIKE :search)`,
+        { search: `%${search}%` },
+      )
     }
 
-    return onlySelectedFields
+    return paginate(qb, query, { sortable: ['name', 'url', 'createdAt'] })
   }
 
   async findOne(id: string): Promise<PracticeEntity | null> {
     return this.practicesRepository.findOneBy({ id })
+  }
+
+  async findUsersByPractice(
+    practiceId: string,
+    query: PaginationQueryDto,
+    search?: string,
+  ) {
+    const qb = this.usersRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.practices', 'practice')
+      .where('practice.id = :practiceId', { practiceId })
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.email',
+        'user.createdAt',
+        'user.active',
+      ])
+
+    if (search) {
+      qb.andWhere(
+        `(user.firstName LIKE :search
+        OR user.lastName LIKE :search
+        OR user.email LIKE :search)`,
+        { search: `%${search}%` },
+      )
+    }
+
+    return paginate(qb, query, {
+      sortable: ['firstName', 'lastName', 'email', 'createdAt'],
+    })
   }
 }

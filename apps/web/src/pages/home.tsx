@@ -11,7 +11,7 @@ import {
 } from '@repo/ui'
 import { PaginatedResult, User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
-import { Datatable, DatatableParams } from '@repo/ui'
+import { PaginatedTable, DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
 import { useDebouncedIsFetching } from '../hooks/useDebouncedIsFetching'
@@ -61,7 +61,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col pt-8 sm:px-8 sm:items-center md:max-w-6xl">
-      <Datatable<User>
+      <PaginatedTable<User>
         className="mb-60 md:w-full"
         columns={[
           {
@@ -151,7 +151,7 @@ export default function Home() {
             </Empty>
           ) : undefined
         }
-      ></Datatable>
+      ></PaginatedTable>
     </div>
   )
 }

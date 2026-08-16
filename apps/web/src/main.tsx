@@ -1,3 +1,4 @@
+import { SidebarProvider } from '@repo/ui'
 import {
   Empty,
   EmptyDescription,
@@ -5,6 +6,7 @@ import {
   EmptyMedia,
   EmptyTitle,
   Toaster,
+  TooltipProvider,
 } from '@repo/ui'
 import { createRoot } from 'react-dom/client'
 import './style.css'
@@ -31,38 +33,46 @@ const App = () => (
   <>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="home" replace />} />
-            <Route element={<NavLayout />}>
-              <Route index path="home" element={<Home />} />
-              <Route path="admin" element={<Admin />}>
-                <Route index element={<Navigate to="practices" replace />} />
-                <Route path="practices" element={<AdminPractices />}>
-                  <Route
-                    path=""
-                    index
-                    element={
-                      <Empty className="place-self-center w-full">
-                        <EmptyHeader>
-                          <EmptyMedia variant="icon">
-                            <Building />
-                          </EmptyMedia>
-                          <EmptyTitle>Select A Practice</EmptyTitle>
-                          <EmptyDescription>
-                            Select a practice to review activity, users, account
-                            status, etc.
-                          </EmptyDescription>
-                        </EmptyHeader>
-                      </Empty>
-                    }
-                  />
-                  <Route path=":practiceId" element={<AdminPractice />} />
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Navigate to="home" replace />} />
+              <Route
+                element={
+                  <SidebarProvider>
+                    <NavLayout />
+                  </SidebarProvider>
+                }
+              >
+                <Route index path="home" element={<Home />} />
+                <Route path="admin" element={<Admin />}>
+                  <Route index element={<Navigate to="practices" replace />} />
+                  <Route path="practices" element={<AdminPractices />}>
+                    <Route
+                      path=""
+                      index
+                      element={
+                        <Empty className="place-self-center w-full">
+                          <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                              <Building />
+                            </EmptyMedia>
+                            <EmptyTitle>Select A Practice</EmptyTitle>
+                            <EmptyDescription>
+                              Select a practice to review activity, users,
+                              account status, etc.
+                            </EmptyDescription>
+                          </EmptyHeader>
+                        </Empty>
+                      }
+                    />
+                    <Route path=":practiceId" element={<AdminPractice />} />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
         <Toaster />
       </ThemeProvider>
     </QueryClientProvider>

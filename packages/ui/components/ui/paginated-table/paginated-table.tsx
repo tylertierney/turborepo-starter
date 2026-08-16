@@ -1,4 +1,4 @@
-import { mergeColDefs } from './datatable.utils'
+import { mergeColDefs } from './paginated-table.utils'
 import { Spinner } from '../spinner'
 import { SearchInput } from '../input-group'
 import {
@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select'
-import styles from './datatable.module.scss'
+import styles from './paginated-table.module.scss'
 import { Button } from '../button'
 
 const range = (start: number, end: number) => {
@@ -210,7 +210,6 @@ const TablePagination = ({
               setPaginationParams((prev) => ({
                 ...prev,
                 pageSize: num,
-                // currentPage: Math.max(Math.ceil(totalCount / num), 1),
                 currentPage:
                   prev.currentPage > newTotalPages
                     ? newTotalPages
@@ -271,7 +270,7 @@ type DatatableProps<T> = {
   defaultColDef?: Partial<Column<T>>
   header?: ReactNode
 }
-export const Datatable = <T,>({
+export const PaginatedTable = <T,>({
   columns = [],
   data = [],
   totalCount = 0,
@@ -292,7 +291,7 @@ export const Datatable = <T,>({
 
   return (
     <div className={`flex flex-col gap-4 ${className}`} {...rest}>
-      <div className="flex px-2 justify-end">
+      <div className="flex justify-end">
         <SearchInput
           value={params.search ?? ''}
           onChange={(e) => {

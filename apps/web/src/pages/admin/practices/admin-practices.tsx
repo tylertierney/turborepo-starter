@@ -1,14 +1,26 @@
-import { convertDatatableParamsToQueryString, toast } from '@repo/ui'
+import {
+  convertDatatableParamsToQueryString,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  toast,
+} from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
 import { PaginatedResult, Practice } from '@repo/models'
-import { Link, Outlet, useParams } from 'react-router'
+import { Link, Outlet, useNavigate, useParams } from 'react-router'
 import { SearchInput } from '../../../../../../packages/ui/components/ui/input-group'
 import { useState } from 'react'
+import { Select } from '@repo/ui'
 
 export const AdminPractices = () => {
   const { practiceId: selectedPracticeId } = useParams()
 
   const [search, setSearch] = useState('')
+
+  const navigate = useNavigate()
 
   const {
     data: practicesResult,
@@ -44,9 +56,11 @@ export const AdminPractices = () => {
   const { data: practices = [], meta } = practicesResult || {}
   const { totalCount = 0 } = meta || {}
 
+  const selectedPractice = practices.find((p) => p.id === selectedPracticeId)
+
   return (
     <div className="flex grow">
-      <div className="flex flex-col sm:w-sm border-r">
+      <div className="hidden md:flex flex-col min-w-xs max-w-xs sm:max-w-sm sm:min-w-sm border-r h-[calc(100vh-4rem)] sticky top-16">
         <div className="flex justify-between p-4 border-b items-center flex-wrap gap-2">
           <h3>
             <b>{totalCount} Practices</b>
@@ -77,7 +91,33 @@ export const AdminPractices = () => {
           })}
         </div>
       </div>
-      <div className="flex flex-col grow p-8">
+      <div className="flex flex-col grow overflow-y-auto">
+        <div className="md:hidden flex items-center justify-end p-8">
+          <Select<Practice | undefined>
+            value={selectedPractice}
+            onValueChange={(p) => {
+              if (p) {
+                navigate(`./${p?.id}`)
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue>
+                {selectedPractice?.name || 'Choose a practice'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Practices</SelectLabel>
+                {practices.map((p) => (
+                  <SelectItem key={p.id} value={p}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <Outlet />
       </div>
     </div>

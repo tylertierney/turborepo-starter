@@ -1,4 +1,4 @@
-import { DatatableParams, type Column } from './datatable'
+import { DatatableParams, type Column } from './paginated-table'
 
 export const mergeColDefs = <T>(
   ...defs: Array<Partial<Column<T>>>

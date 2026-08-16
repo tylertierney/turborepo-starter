@@ -60,4 +60,19 @@ export class PracticesController {
     }
     return practice
   }
+
+  @Get(':id/users')
+  findUsersByPractice(
+    @Param('id') id: string,
+    @Query(new ValidationPipe({ transform: true }))
+    paginationQuery: PaginationQueryDto,
+    @Query('search')
+    search = '',
+  ) {
+    return this.practicesService.findUsersByPractice(
+      id,
+      paginationQuery,
+      search,
+    )
+  }
 }

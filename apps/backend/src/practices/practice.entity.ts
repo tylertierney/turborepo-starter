@@ -9,7 +9,7 @@ import {
 import { UserEntity } from '../users/user.entity.js'
 import { mockPractice } from '@repo/models'
 
-@Entity()
+@Entity({ name: 'practices' })
 export class PracticeEntity {
   constructor(partial: Partial<PracticeEntity> = {}) {
     Object.assign(this, partial)
@@ -35,7 +35,7 @@ export class PracticeEntity {
 
   @ManyToMany(() => UserEntity, user => user.practices, { cascade: true })
   @JoinTable({
-    name: 'user_practices',
+    name: 'users_practices',
     joinColumn: {
       name: 'practice_id',
       referencedColumnName: 'id',

@@ -8,7 +8,7 @@ import {
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
 
-@Entity()
+@Entity({ name: 'users' })
 export class UserEntity {
   constructor(partial: Partial<UserEntity> = {}) {
     Object.assign(this, partial)
@@ -25,7 +25,7 @@ export class UserEntity {
   @Column({ unique: true })
   email: string = ''
 
-  @Column()
+  @Column({ select: false })
   password!: string
 
   @CreateDateColumn()
