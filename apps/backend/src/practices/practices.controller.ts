@@ -75,4 +75,9 @@ export class PracticesController {
       search,
     )
   }
+
+  @Get(':id/clinics')
+  findClinicsByPractice(@Param('id') id: string) {
+    return this.practicesService.findClinicsByPractice(id)
+  }
 }

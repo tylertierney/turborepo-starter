@@ -8,6 +8,8 @@ import {
   randUuid,
 } from '@ngneat/falso'
 
+export type UserRole = 'staff' | 'provider' | 'admin' | 'owner'
+
 export type User = {
   id: string
   userNumber: number

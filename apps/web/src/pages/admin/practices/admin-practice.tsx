@@ -106,9 +106,9 @@ export const AdminPractice = () => {
 
       <Tabs className="mb-60">
         <TabsList variant="line" className="mb-10">
-          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
-        <TabsContent value="users">
+        <TabsContent value="about">
           <div className="flex flex-col pt-8 sm:items-center md:max-w-6xl">
             <PaginatedTable<User>
               className="md:w-full"
@@ -117,6 +117,11 @@ export const AdminPractice = () => {
               data={users}
               totalCount={meta?.totalCount ?? 0}
               tableClassName="table-layout-fixed"
+              header={
+                <h3 className="text-xl">
+                  <b>Users</b>
+                </h3>
+              }
               defaultColDef={{
                 style: {
                   overflow: 'hidden',

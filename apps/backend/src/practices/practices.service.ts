@@ -6,6 +6,7 @@ import { PaginatedResult } from '@repo/models'
 import { paginate } from '../shared/pagination/pagination.util.js'
 import { PracticeEntity } from './practice.entity.js'
 import { UserEntity } from '../users/user.entity.js'
+import { ClinicEntity } from '../clinics/clinic.entity.js'
 
 @Injectable()
 export class PracticesService {
@@ -14,6 +15,8 @@ export class PracticesService {
     private practicesRepository: Repository<PracticeEntity>,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
+    @InjectRepository(ClinicEntity)
+    private clinicsRepository: Repository<ClinicEntity>,
   ) {}
 
   async findAll(
@@ -67,5 +70,12 @@ export class PracticesService {
     return paginate(qb, query, {
       sortable: ['firstName', 'lastName', 'email', 'createdAt'],
     })
+  }
+
+  async findClinicsByPractice(practiceId: string) {
+    const [data, totalCount] = await this.clinicsRepository.findAndCount({
+      where: { practiceId },
+    })
+    return { data, meta: { totalCount } } as PaginatedResult<ClinicEntity>
   }
 }

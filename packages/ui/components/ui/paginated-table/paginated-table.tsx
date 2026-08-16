@@ -282,6 +282,7 @@ export const PaginatedTable = <T,>({
   tableStyle = {},
   tableClassName = '',
   defaultColDef = {},
+  header,
   ...rest
 }: DatatableProps<T> & ComponentProps<'div'>) => {
   const [cols] = useState<ColumnWithId<T>[]>(
@@ -291,7 +292,8 @@ export const PaginatedTable = <T,>({
 
   return (
     <div className={`flex flex-col gap-4 ${className}`} {...rest}>
-      <div className="flex justify-end">
+      <div className="flex">
+        <div className="flex items-center grow">{header}</div>
         <SearchInput
           value={params.search ?? ''}
           onChange={(e) => {

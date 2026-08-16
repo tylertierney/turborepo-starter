@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
+import type { UserRole } from '@repo/models'
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -33,6 +34,13 @@ export class UserEntity {
 
   @Column()
   active: boolean = true
+
+  @Column({
+    type: 'simple-enum',
+    enum: ['staff', 'provider', 'admin', 'owner'],
+    default: 'staff',
+  })
+  role!: UserRole
 
   @ManyToMany(() => PracticeEntity, practice => practice.users)
   practices!: PracticeEntity[]
