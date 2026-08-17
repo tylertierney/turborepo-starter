@@ -5,6 +5,7 @@ import {
   randNumber,
   randPassword,
   randPastDate,
+  randPhoneNumber,
   randUuid,
 } from '@ngneat/falso'
 
@@ -16,7 +17,9 @@ export type User = {
   firstName: string
   lastName: string
   email: string
+  phone: string
   password: string
+  image?: string
   createdAt: Date | string
   role: UserRole
 }
@@ -27,7 +30,9 @@ export const mockUser = (partial: Partial<User> = {}): User => ({
   firstName: randFirstName(),
   lastName: randLastName(),
   email: randEmail(),
+  phone: randPhoneNumber(),
   password: randPassword(),
+  image: `https://picsum.photos/seed/${randUuid()}/60/60`,
   createdAt: randPastDate(),
   role: (['staff', 'provider', 'admin', 'owner'] satisfies UserRole[])[
     ~~(Math.random() * 4)

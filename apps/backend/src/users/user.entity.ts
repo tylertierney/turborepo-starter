@@ -27,8 +27,14 @@ export class UserEntity {
   @Column({ unique: true })
   email: string = ''
 
+  @Column()
+  phone: string = ''
+
   @Column({ select: false })
   password!: string
+
+  @Column({ nullable: true })
+  image?: string
 
   @CreateDateColumn()
   createdAt: Date = new Date()

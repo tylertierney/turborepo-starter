@@ -95,7 +95,7 @@ type PaginationProps = {
   setPaginationParams: Dispatch<SetStateAction<PaginationParams>>
   buffer?: 1 | 3 | 5 | 7 | 9
 }
-const TablePagination = ({
+export const TablePagination = ({
   totalCount,
   paginationParams = { pageSize: 10, currentPage: 1 },
   setPaginationParams,
@@ -115,13 +115,13 @@ const TablePagination = ({
   )
 
   return (
-    <Pagination className={className}>
-      <PaginationContent className="gap-3 sm:gap-8">
+    <Pagination className={`@container ${className}`}>
+      <PaginationContent className="gap-3 @md:gap-8">
         <span className="text-sm text-muted-foreground">
-          <span className="hidden sm:inline">
+          <span className="hidden @md:inline">
             {startRowIdx} - {endRowIdx} of {totalCount}
           </span>
-          <span className="sm:hidden">
+          <span className="@md:hidden">
             {currentPage} / {totalPages}
           </span>
         </span>
@@ -141,7 +141,7 @@ const TablePagination = ({
               text=""
             />
           </PaginationItem>
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden @lg:flex items-center gap-1">
             {paginationItems.map((n) => (
               <PaginationItem key={n}>
                 {typeof n === 'string' ? (
@@ -175,7 +175,7 @@ const TablePagination = ({
               </PaginationItem>
             ))}
           </div>
-          <div className="sm:hidden items-center gap-1">
+          <div className="@lg:hidden items-center gap-1">
             <PaginationItem>
               <PaginationLink isActive={true}>{currentPage}</PaginationLink>
             </PaginationItem>
@@ -198,8 +198,8 @@ const TablePagination = ({
         </div>
         <label className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            <span className="hidden sm:inline">Items per page</span>
-            <span className="sm:hidden">Show</span>
+            <span className="hidden @xl:inline">Items per page</span>
+            <span className="@xl:hidden">Show</span>
           </span>
           <Select<number>
             value={pageSize}
@@ -257,7 +257,7 @@ export type DatatableParams<T> = {
   }>
 } & PaginationParams
 
-type DatatableProps<T> = {
+export type PaginatedTableProps<T> = {
   columns: Column<T>[]
   data: T[]
   totalCount: number
@@ -284,7 +284,7 @@ export const PaginatedTable = <T,>({
   defaultColDef = {},
   header,
   ...rest
-}: DatatableProps<T> & ComponentProps<'div'>) => {
+}: PaginatedTableProps<T> & ComponentProps<'div'>) => {
   const [cols] = useState<ColumnWithId<T>[]>(
     columns.map((c, idx) => ({ ...c, id: idx })),
   )

@@ -56,6 +56,8 @@ export class PracticesService {
         'user.email',
         'user.createdAt',
         'user.active',
+        'user.phone',
+        'user.role',
       ])
 
     if (search) {

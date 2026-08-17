@@ -1,6 +1,3 @@
-// components
-// export * from "./components";
-export * from './src/something'
 export * from './components/ui/button'
 export * from './components/ui/pagination'
 export * from './components/ui/paginated-table/paginated-table'
@@ -15,3 +12,5 @@ export * from './components/ui/card'
 export * from './components/ui/collapsible'
 export * from './components/ui/tabs'
 export * from './components/ui/select'
+export * from './components/pseudo-table'
+export * from './components/user-table'

@@ -4,7 +4,6 @@ import { Clinic, PaginatedResult, Practice, User } from '@repo/models'
 import {
   Button,
   convertDatatableParamsToQueryString,
-  PaginatedTable,
   DatatableParams,
   Empty,
   Tabs,
@@ -12,7 +11,7 @@ import {
   TabsList,
   TabsTrigger,
   toast,
-  Card,
+  UserPseudoTable,
 } from '@repo/ui'
 import { ArrowUpRightIcon, BuildingIcon, MapPinIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -184,7 +183,7 @@ export const AdminPractice = () => {
                 ))}
               </div>
             </section>
-            <PaginatedTable<User>
+            {/* <PaginatedTable<User>
               className="md:w-full"
               params={usersDatatableParams}
               setParams={setUsersDatatableParams}
@@ -246,6 +245,17 @@ export const AdminPractice = () => {
                     new Date(createdAt).toLocaleDateString('en-us'),
                 },
               ]}
+            /> */}
+            <UserPseudoTable
+              params={usersDatatableParams}
+              setParams={setUsersDatatableParams}
+              data={users}
+              totalCount={meta?.totalCount ?? 0}
+              header={
+                <h3 className="text-xl">
+                  <b>Users</b>
+                </h3>
+              }
             />
           </div>
         </TabsContent>
