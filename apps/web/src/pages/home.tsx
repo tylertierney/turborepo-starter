@@ -60,9 +60,10 @@ export default function Home() {
   })
 
   return (
-    <div className="flex flex-col pt-8 sm:px-8 sm:items-center md:max-w-6xl">
+    <div className="@container flex flex-col pt-8 sm:px-8 sm:items-center md:max-w-6xl w-full">
       <PaginatedTable<User>
         className="mb-60 md:w-full"
+        tableClassName="@xl:table-layout-fixed"
         columns={[
           {
             headerName: 'ID',
@@ -111,7 +112,6 @@ export default function Home() {
         setParams={setDatatableParams}
         loading={isFetchingWithDebounce}
         // tableStyle={{ tableLayout: '' }}
-        tableClassName="sm:table-layout-fixed"
         defaultColDef={{
           style: {
             overflow: 'hidden',

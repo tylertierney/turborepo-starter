@@ -7,6 +7,7 @@ import {
   randUrl,
   randUuid,
 } from '@ngneat/falso'
+import { User } from './user.js'
 
 export const randPracticeName = () => {
   const getPrefix = () => {
@@ -37,6 +38,7 @@ export type Practice = {
   url: string
   createdAt: Date | string
   active: boolean
+  users: User[]
 }
 
 export const mockPractice = (partial: Partial<Practice> = {}): Practice => ({
@@ -46,5 +48,6 @@ export const mockPractice = (partial: Partial<Practice> = {}): Practice => ({
   url: randUrl(),
   active: true,
   createdAt: randPastDate(),
+  users: [],
   ...partial,
 })

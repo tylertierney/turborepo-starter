@@ -18,6 +18,7 @@ export type User = {
   email: string
   password: string
   createdAt: Date | string
+  role: UserRole
 }
 
 export const mockUser = (partial: Partial<User> = {}): User => ({
@@ -28,5 +29,8 @@ export const mockUser = (partial: Partial<User> = {}): User => ({
   email: randEmail(),
   password: randPassword(),
   createdAt: randPastDate(),
+  role: (['staff', 'provider', 'admin', 'owner'] satisfies UserRole[])[
+    ~~(Math.random() * 4)
+  ],
   ...partial,
 })

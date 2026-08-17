@@ -78,6 +78,7 @@ export class PracticesController {
 
   @Get(':id/clinics')
   findClinicsByPractice(@Param('id') id: string) {
+    console.log(id)
     return this.practicesService.findClinicsByPractice(id)
   }
 }

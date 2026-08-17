@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router'
-import { PaginatedResult, Practice, User } from '@repo/models'
+import { Clinic, PaginatedResult, Practice, User } from '@repo/models'
 import {
   Button,
   convertDatatableParamsToQueryString,
@@ -12,8 +12,9 @@ import {
   TabsList,
   TabsTrigger,
   toast,
+  Card,
 } from '@repo/ui'
-import { ArrowUpRightIcon } from 'lucide-react'
+import { ArrowUpRightIcon, BuildingIcon, MapPinIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export const AdminPractice = () => {
@@ -75,6 +76,41 @@ export const AdminPractice = () => {
     },
   })
 
+  const { data: clinicsResponse } = useQuery({
+    queryKey: [`admin-practices-id-clinics=${selectedPracticeId}`],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/practices/${selectedPracticeId}/clinics`)
+
+        if (!res.ok) {
+          toast.add({
+            type: 'error',
+            title: 'Error',
+            description: `Failed to fetch clinics`,
+          })
+          throw new Error(`Server error: ${res.status}`)
+        }
+
+        const json = (await res.json()) as PaginatedResult<Clinic>
+        return json
+      } catch (err) {
+        console.log('ERROR', err)
+        return {
+          data: [],
+          meta: {
+            totalCount: 0,
+            totalPages: 0,
+            currentPage: 1,
+            itemCount: 0,
+            pageSize: 10,
+          },
+        }
+      }
+    },
+  })
+
+  const { data: clinics = [] } = clinicsResponse || {}
+
   if (!data) return <Empty>No practice details found</Empty>
 
   const { name, image, url } = data
@@ -109,14 +145,52 @@ export const AdminPractice = () => {
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
         <TabsContent value="about">
-          <div className="flex flex-col pt-8 sm:items-center md:max-w-6xl">
+          <div className="flex flex-col items-stretch gap-16 pt-8 md:max-w-6xl">
+            <section>
+              <h3 className="text-xl mb-4">
+                <b>Clinics ({clinics.length})</b>
+              </h3>
+              <div className="flex gap-8 flex-wrap">
+                {clinics.map((c, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col rounded overflow-hidden grow w-full sm:min-w-64 sm:max-w-64 p-0 border shadow"
+                  >
+                    <img
+                      // width="100%"
+                      height="4rem"
+                      width="auto"
+                      src={c.image}
+                      className="max-h-40 sm:max-h-32"
+                      style={{
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <div className="flex flex-col p-4">
+                      <span>{c.name}</span>
+                      <span className="flex gap-1 items-center text-xs text-muted-foreground">
+                        <BuildingIcon size="12" />
+                        <span>{c.address?.street1}</span>
+                        {c.address?.street2 && `, ${c.address.street2}`}
+                      </span>
+                      <span className="flex gap-1 items-center text-xs text-muted-foreground">
+                        <MapPinIcon size="12" />
+                        <span>
+                          {c.address?.city}, {c.address?.state}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
             <PaginatedTable<User>
               className="md:w-full"
               params={usersDatatableParams}
               setParams={setUsersDatatableParams}
               data={users}
               totalCount={meta?.totalCount ?? 0}
-              tableClassName="table-layout-fixed"
+              tableClassName="md:table-layout-fixed"
               header={
                 <h3 className="text-xl">
                   <b>Users</b>

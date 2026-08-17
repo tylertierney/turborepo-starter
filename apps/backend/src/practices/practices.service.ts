@@ -74,8 +74,16 @@ export class PracticesService {
 
   async findClinicsByPractice(practiceId: string) {
     const [data, totalCount] = await this.clinicsRepository.findAndCount({
-      where: { practiceId },
+      where: {
+        practice: {
+          id: practiceId,
+        },
+      },
+      relations: {
+        address: true,
+      },
     })
+    console.log(data)
     return { data, meta: { totalCount } } as PaginatedResult<ClinicEntity>
   }
 }

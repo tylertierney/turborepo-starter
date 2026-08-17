@@ -38,40 +38,77 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     await this.clinicsRepository.clear()
     await this.addressesRepository.clear()
 
-    const users: UserEntity[] = Array(randNumber({ min: 200, max: 300 }))
-      .fill(null)
-      .map(mockUserEntity)
+    // const users: UserEntity[] = Array(randNumber({ min: 200, max: 300 }))
+    //   .fill(null)
+    //   .map(mockUserEntity)
 
     const practices = Array(randNumber({ min: 40, max: 60 }))
       .fill(null)
-      .map(mockPracticeEntity)
+      .map(() => {
+        const practice = mockPracticeEntity()
+        return {
+          ...practice,
+        }
+      })
 
-    const clinics = practices
-      .map(({ id: practiceId }) =>
-        Array(randNumber({ min: 1, max: 5 }))
-          .fill(null)
-          .map(() => mockClinicEntity({ practiceId })),
-      )
-      .flat()
-
-    await this.clinicsRepository.save(clinics)
-
-    const savedUsers = await this.usersRepository.save(users)
     const savedPractices = await this.practicesRepository.save(practices)
 
-    const usersWithPractices: UserEntity[] = savedUsers.map(u => {
-      const smallAmountOfRandomPractices = savedPractices.filter(
-        () => Math.random() < 0.1,
-      )
+    const clinics = savedPractices
+      .map(p => {
+        return Array(randNumber({ min: 1, max: 5 }))
+          .fill(null)
+          .map(() => {
+            const clinic = mockClinicEntity({ practice: p })
+            return clinic
+          })
+      })
+      .flat()
 
-      return {
-        ...u,
-        practices: smallAmountOfRandomPractices,
-      }
-    })
+    const savedClinics = await this.clinicsRepository.save(clinics)
 
-    await this.usersRepository.save(usersWithPractices)
+    const users = savedClinics
+      .map(c => {
+        return Array(randNumber({ min: 6, max: 20 }))
+          .fill(null)
+          .map(() => {
+            const user = mockUserEntity({
+              clinics: [c],
+              practices: [c.practice],
+            })
+            return user
+          })
+      })
+      .flat()
 
-    this.logger.log(`Seeded ${users.length} users into the database.`)
+    await this.usersRepository.save(users)
+
+    // const clinics = practices
+    //   .map(({ id: practiceId }) =>
+    //     Array(randNumber({ min: 1, max: 5 }))
+    //       .fill(null)
+    //       .map(() => mockClinicEntity({ practiceId })),
+    //   )
+    //   .flat()
+
+    // await this.clinicsRepository.save(clinics)
+
+    // const savedUsers = await this.usersRepository.save(users)
+
+    // const usersWithPractices: UserEntity[] = savedUsers.map(u => {
+    //   const smallAmountOfRandomPractices = savedPractices.filter(
+    //     () => Math.random() < 0.1,
+    //   )
+
+    //   return {
+    //     ...u,
+    //     practices: smallAmountOfRandomPractices,
+    //   }
+    // })
+
+    // await this.usersRepository.save(usersWithPractices)
+
+    // this.logger.log(
+    //   `Seeded ${savedPractices.length} practices into the database.`,
+    // )
   }
 }

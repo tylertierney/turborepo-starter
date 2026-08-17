@@ -110,7 +110,7 @@ export const NavLayout = () => {
                   tooltip={p.name}
                   render={<Link className="flex items-center" to={p.url} />}
                   onClick={() => {
-                    if (isMobile && openMobile) {
+                    if (openMobile) {
                       setOpen(false)
                       setOpenMobile(false)
                     }

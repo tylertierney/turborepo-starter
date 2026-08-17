@@ -4,10 +4,13 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { UserEntity } from '../users/user.entity.js'
 import { mockPractice } from '@repo/models'
+import { ClinicEntity } from '../clinics/clinic.entity.js'
+// import { ClinicEntity } from '../clinics/clinic.entity.js'
 
 @Entity({ name: 'practices' })
 export class PracticeEntity {
@@ -46,6 +49,12 @@ export class PracticeEntity {
     },
   })
   users!: UserEntity[]
+
+  // @OneToMany(() => ClinicEntity, clinic => clinic.practice)
+  // clinics!: ClinicEntity[]
+
+  // @ManyToMany(() => ClinicEntity, clinic => clinic.practiceId)
+  // clinics!: ClinicEntity[]
 }
 
 export const mockPracticeEntity = (

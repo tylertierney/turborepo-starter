@@ -1,4 +1,4 @@
-import { randPassword, randPastDate, randUser } from '@ngneat/falso'
+import { randPastDate } from '@ngneat/falso'
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
-import type { UserRole } from '@repo/models'
+import { mockUser, type UserRole } from '@repo/models'
+import { ClinicEntity } from '../clinics/clinic.entity.js'
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -44,15 +45,16 @@ export class UserEntity {
 
   @ManyToMany(() => PracticeEntity, practice => practice.users)
   practices!: PracticeEntity[]
+
+  @ManyToMany(() => ClinicEntity, clinic => clinic.users)
+  clinics!: ClinicEntity[]
 }
 
 export const mockUserEntity = (
   partial: Partial<UserEntity> = {},
 ): UserEntity => {
   const temp = {
-    ...randUser(),
-    password: randPassword(),
-    active: true,
+    ...mockUser(),
     createdAt: randPastDate(),
   }
 
