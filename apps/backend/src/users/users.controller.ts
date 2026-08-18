@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  // InternalServerErrorException,
   NotFoundException,
   Param,
   Query,
@@ -11,7 +10,7 @@ import { UsersService } from './users.service.js'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { mockUserEntity, UserEntity } from './user.entity.js'
-import { PaginatedResult } from '@repo/models'
+import { PaginatedResult, type UserRole, userRoles } from '@repo/models'
 
 export type PaginationQuery = {
   page: number
@@ -59,17 +58,26 @@ export class UsersController {
     type: String,
     description: 'Search users by firstName, lastName, or email.',
   })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    type: String,
+    enum: userRoles,
+    description: 'Filter users by role.',
+  })
   async findAll(
     @Query(new ValidationPipe({ transform: true }))
     paginationQuery: PaginationQueryDto,
     @Query('search')
     search = '',
+    @Query('role')
+    role: UserRole,
   ) {
     // const delay = (ms: number) =>
     //   new Promise(resolve => setTimeout(resolve, ms))
     // await delay(60000)
 
-    return this.usersService.findAll(paginationQuery, search)
+    return this.usersService.findAll(paginationQuery, search, role)
 
     // throw new InternalServerErrorException('ahhhhhh!')
   }

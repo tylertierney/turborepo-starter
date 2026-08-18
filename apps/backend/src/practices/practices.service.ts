@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
-import { PaginatedResult } from '@repo/models'
+import { type PaginatedResult, type UserRole } from '@repo/models'
 import { paginate } from '../shared/pagination/pagination.util.js'
 import { PracticeEntity } from './practice.entity.js'
 import { UserEntity } from '../users/user.entity.js'
@@ -27,8 +27,8 @@ export class PracticesService {
 
     if (search) {
       qb.andWhere(
-        `(practice.name LIKE :search
-        OR practice.url LIKE :search)`,
+        `(practice.name ILIKE :search
+        OR practice.url ILIKE :search)`,
         { search: `%${search}%` },
       )
     }
@@ -44,6 +44,7 @@ export class PracticesService {
     practiceId: string,
     query: PaginationQueryDto,
     search?: string,
+    role?: UserRole,
   ) {
     // await new Promise(resolve => setTimeout(resolve, 3_000))
     // throw new NotFoundException('something went wrong')
@@ -64,11 +65,15 @@ export class PracticesService {
         'user.image',
       ])
 
+    if (role) {
+      qb.andWhere(`(user.role = :role)`, { role })
+    }
+
     if (search) {
       qb.andWhere(
-        `(user.firstName LIKE :search
-        OR user.lastName LIKE :search
-        OR user.email LIKE :search)`,
+        `(user.firstName ILIKE :search
+        OR user.lastName ILIKE :search
+        OR user.email ILIKE :search)`,
         { search: `%${search}%` },
       )
     }

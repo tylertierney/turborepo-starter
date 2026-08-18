@@ -9,7 +9,8 @@ import {
   randUuid,
 } from '@ngneat/falso'
 
-export type UserRole = 'staff' | 'provider' | 'admin' | 'owner'
+export const userRoles = ['staff', 'provider', 'admin', 'owner'] as const
+export type UserRole = (typeof userRoles)[number]
 
 export type User = {
   id: string

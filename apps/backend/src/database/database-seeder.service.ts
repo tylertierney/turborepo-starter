@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ClinicEntity, mockClinicEntity } from '../clinics/clinic.entity.js'
-import { Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
 import {
   mockPracticeEntity,
   PracticeEntity,
@@ -9,13 +9,14 @@ import {
 import { mockUserEntity, UserEntity } from '../users/user.entity.js'
 import { randNumber } from '@ngneat/falso'
 import { AddressEntity } from '../addresses/address.entity.js'
-import { Practice } from '@repo/models'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
   private readonly logger = new Logger(DatabaseSeederService.name)
 
   constructor(
+    private readonly dataSource: DataSource,
+
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
 
@@ -30,18 +31,13 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.resetAndSeedDatabase()
+    if (process.env.NODE_ENV === 'development') {
+      await this.resetAndSeedDatabase()
+    }
   }
 
   private resetAndSeedDatabase = async () => {
-    await this.practicesRepository.clear()
-    await this.usersRepository.clear()
-    await this.clinicsRepository.clear()
-    await this.addressesRepository.clear()
-
-    // const users: UserEntity[] = Array(randNumber({ min: 200, max: 300 }))
-    //   .fill(null)
-    //   .map(mockUserEntity)
+    await this.dataSource.synchronize(true)
 
     const practices = Array(randNumber({ min: 40, max: 60 }))
       .fill(null)
@@ -67,22 +63,6 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     const savedClinics = await this.clinicsRepository.save(clinics)
 
-    // const users = savedClinics
-    //   .map(c => {
-    //     return Array(randNumber({ min: 6, max: 20 }))
-    //       .fill(null)
-    //       .map(() => {
-    //         const user = mockUserEntity({
-    //           clinics: [c],
-    //           practices: [c.practice],
-    //         })
-    //         return user
-    //       })
-    //   })
-    //   .flat()
-
-    // await this.usersRepository.save(users)
-
     const practiceMap: Record<string, ClinicEntity[]> = {}
     for (const c of savedClinics) {
       if (c.practice.id in practiceMap) {
@@ -93,7 +73,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     }
 
     let fakeUsers: UserEntity[] = []
-    for (const [p, clinics] of Object.entries(practiceMap)) {
+    for (const clinics of Object.values(practiceMap)) {
       const owners = Array(randNumber({ min: 1, max: 3 }))
         .fill(null)
         .map(() => {

@@ -12,7 +12,7 @@ export const mergeColDefs = <T>(
 export const convertDatatableParamsToQueryString = <T>(
   params: DatatableParams<T>,
 ): string => {
-  const { pageSize, currentPage, search, sort = [] } = params
+  const { pageSize, currentPage, search, sort = [], filter = {} } = params
 
   const p = new URLSearchParams({
     pageSize: String(pageSize),
@@ -21,6 +21,12 @@ export const convertDatatableParamsToQueryString = <T>(
 
   if (search) {
     p.set('search', search)
+  }
+
+  const filters = Object.entries<string>(filter)
+
+  for (const [filterBy, value] of filters) {
+    p.set(filterBy, value)
   }
 
   if (sort.length) {

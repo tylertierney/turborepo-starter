@@ -29,40 +29,19 @@ export class AddressEntity {
 export const mockAddressEntity = (
   partial: Partial<AddressEntity> = {},
 ): AddressEntity => {
-  // const random = randAddress()
-
   const temp = mockAddress()
-  // const temp: AddressEntity = {
-  //   id: randUuid(),
-  //   street1: random.street,
-  //   street2: randStreet2(),
-  //   city: random.city,
-  //   state: randState(),
-  //   postalCode: random.zipCode,
+  // return {
+  //   ...temp,
+  //   ...partial,
+  //   id: undefined,
   // }
-  return {
-    ...temp,
+
+  return new AddressEntity({
+    street1: temp.street1,
+    street2: temp.street2,
+    city: temp.city,
+    state: temp.state,
+    postalCode: temp.postalCode,
     ...partial,
-  }
+  })
 }
-
-// const randState = () => {
-//   const states = [
-//     'Alabama',
-//     'Alaska',
-//     'Arizona',
-//     'Arkansas',
-//     'Colorado',
-//     'Connecticut',
-//     'Delaware',
-//     'Florida',
-//     'Georgia',
-//     'Hawaii',
-//     'Idaho',
-//     'Illinois',
-//     'Indiana',
-//     "Iowa"
-//   ]
-
-//   return states[~~Math.random() * states.length]
-// }

@@ -1,6 +1,6 @@
 import { Badge } from '../ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import type { User } from '@repo/models'
+import { userRoles, type User, type UserRole } from '@repo/models'
 import { PseudoTable, PseudoTableProps } from './pseudo-table'
 import { ComponentProps } from 'react'
 import {
@@ -13,8 +13,16 @@ import {
 } from '../ui/empty'
 import { Button } from '../ui/button'
 import { UserIcon, RefreshCcw, ArrowUpRightIcon } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from '../ui/select'
 
-const RoleBadge = ({ role }: { role: User['role'] }) => {
+const RoleBadge = ({ role }: { role: UserRole }) => {
   if (role === 'staff') {
     return (
       <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
@@ -53,13 +61,19 @@ const RoleBadge = ({ role }: { role: User['role'] }) => {
 export const UserPseudoTable = ({
   onRefresh,
   error = false,
+  params,
+  setParams,
   ...rest
 }: Omit<PseudoTableProps<User>, 'rowContent'> & {
   onRefresh?: () => void
   error?: boolean
 } & ComponentProps<'div'>) => {
+  // const [roleFilter, setRoleFilter] = useState<UserRole | null>(null)
+
   return (
     <PseudoTable<User>
+      params={params}
+      setParams={setParams}
       className="@container"
       header={
         <h3 className="text-xl">
@@ -163,6 +177,42 @@ export const UserPseudoTable = ({
             />
           </Empty>
         ) : undefined
+      }
+      filtersArea={
+        <Select<UserRole | null>
+          value={(params.filter?.role ?? null) as UserRole | null}
+          onValueChange={(val) => {
+            if (!val) {
+              setParams((prev) => ({
+                ...prev,
+                filter: Object.fromEntries(
+                  Object.entries(prev.filter ?? {}).filter(
+                    ([f]) => f !== 'role',
+                  ),
+                ) as Record<keyof User, string>,
+              }))
+              return
+            }
+
+            setParams((prev) => ({
+              ...prev,
+              filter: { ...prev.filter, role: val },
+            }))
+          }}
+        >
+          <SelectTrigger className="border-0">Role</SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Filter by role</SelectLabel>
+              <SelectItem value={null}>All</SelectItem>
+              {userRoles.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role[0].toUpperCase() + role.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       }
       {...rest}
     />

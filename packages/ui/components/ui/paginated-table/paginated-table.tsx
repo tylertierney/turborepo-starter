@@ -148,7 +148,6 @@ export const TablePagination = ({
                   <PaginationEllipsis
                     onClick={() =>
                       setPaginationParams((prev) => {
-                        console.log(prev)
                         return {
                           ...prev,
                           currentPage:
@@ -255,6 +254,7 @@ export type DatatableParams<T> = {
     by: keyof T
     order: 'desc' | 'asc'
   }>
+  filter?: Partial<Record<keyof T, string>>
 } & PaginationParams
 
 export type PaginatedTableProps<T> = {

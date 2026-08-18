@@ -1,11 +1,10 @@
+import * as dotenv from 'dotenv'
+dotenv.config({ quiet: true })
+
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module.js'
 import { RequestMethod } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-
-import * as dotenv from 'dotenv'
-
-dotenv.config({ quiet: true })
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)

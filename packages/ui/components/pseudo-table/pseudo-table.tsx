@@ -28,6 +28,7 @@ export type PseudoTableProps<T> = {
     key: keyof T
     label: string
   }>
+  filtersArea?: ReactNode
 }
 
 export const PseudoTable = <T,>({
@@ -41,6 +42,7 @@ export const PseudoTable = <T,>({
   header,
   className = '',
   sortableColumns = [],
+  filtersArea,
   ...rest
 }: PseudoTableProps<T> & ComponentProps<'div'>) => {
   return (
@@ -65,7 +67,7 @@ export const PseudoTable = <T,>({
       <div className="flex flex-col items-stretch rounded-lg border overflow-hidden">
         <div className="flex flex-col justify-center min-h-16 border-b bg-accent-foreground/5 p-2 gap-2">
           <SearchInput
-            className="flex @lg:hidden w-full"
+            className="bg-background dark:bg-background flex @lg:hidden w-full"
             value={params.search ?? ''}
             onChange={(e) => {
               setParams((prev) => ({
@@ -75,7 +77,8 @@ export const PseudoTable = <T,>({
               }))
             }}
           />
-          <div className="flex justify-end items-center">
+          <div className="flex justify-end items-center gap-2">
+            {filtersArea}
             {!!sortableColumns.length && (
               <Select<keyof T | undefined>
                 value={params.sort?.[0]?.by ?? undefined}

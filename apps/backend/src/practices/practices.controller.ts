@@ -10,7 +10,7 @@ import { PracticesService } from './practices.service.js'
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
 import { mockPracticeEntity, PracticeEntity } from './practice.entity.js'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
-import { PaginatedResult } from '@repo/models'
+import { PaginatedResult, userRoles, type UserRole } from '@repo/models'
 
 @Controller('practices')
 export class PracticesController {
@@ -62,23 +62,32 @@ export class PracticesController {
   }
 
   @Get(':id/users')
+  @ApiQuery({
+    name: 'role',
+    type: String,
+    enum: userRoles,
+    required: false,
+    description: 'Filter users by role.',
+  })
   findUsersByPractice(
     @Param('id') id: string,
     @Query(new ValidationPipe({ transform: true }))
     paginationQuery: PaginationQueryDto,
     @Query('search')
     search = '',
+    @Query('role')
+    role: UserRole,
   ) {
     return this.practicesService.findUsersByPractice(
       id,
       paginationQuery,
       search,
+      role,
     )
   }
 
   @Get(':id/clinics')
   findClinicsByPractice(@Param('id') id: string) {
-    console.log(id)
     return this.practicesService.findClinicsByPractice(id)
   }
 }

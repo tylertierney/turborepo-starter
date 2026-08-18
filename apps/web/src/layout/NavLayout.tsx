@@ -1,36 +1,27 @@
 import {
   Button,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  // SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from '@repo/ui'
-import { Link, Outlet } from 'react-router'
-import { useTheme } from '../context/ThemeProvider'
 import {
   ChevronDown,
   House,
+  LucideProps,
   MenuIcon,
-  Plus,
-  Shield,
   ShieldCog,
 } from 'lucide-react'
+import { Link, Outlet } from 'react-router'
+import { useTheme } from '../context/ThemeProvider'
 
 const themeSvg = (
   <svg
@@ -56,7 +47,7 @@ const themeSvg = (
 
 export const NavLayout = () => {
   const { theme, setTheme } = useTheme()
-  const { setOpen, isMobile, openMobile, setOpenMobile } = useSidebar()
+  const { setOpen, openMobile, setOpenMobile } = useSidebar()
 
   return (
     <>
@@ -79,61 +70,38 @@ export const NavLayout = () => {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          {/* <SidebarGroup>
-            <SidebarGroupLabel>Application</SidebarGroupLabel>
-            <SidebarGroupAction>
-              <Plus /> <span className="sr-only">Add Project</span>
-            </SidebarGroupAction>
-            <SidebarGroupContent></SidebarGroupContent>
-          </SidebarGroup> */}
-          {/* <Collapsible defaultOpen className="group/collapsible">
-            <SidebarGroup>
-              <SidebarGroupLabel render={<CollapsibleTrigger />}>
-                Help
-                <ChevronDown className="ml-auto transition-transform group-data-open/collapsible:rotate-180" />
-              </SidebarGroupLabel>
-              <CollapsibleContent>
-                <SidebarGroupContent />
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible> */}
           <SidebarMenu>
             {[
               {
                 name: 'Home',
                 url: 'home',
-                icon: () => <House />,
+                icon: (props: LucideProps) => <House {...props} />,
+              },
+              {
+                name: 'Admin',
+                url: 'admin',
+                icon: (props: LucideProps) => <ShieldCog {...props} />,
               },
             ].map((p) => (
-              <SidebarMenuItem key={p.name}>
+              <SidebarMenuItem key={p.name} className="mt-auto">
                 <SidebarMenuButton
                   tooltip={p.name}
-                  render={<Link className="flex items-center" to={p.url} />}
+                  className="text-xl"
+                  size="lg"
                   onClick={() => {
                     if (openMobile) {
                       setOpen(false)
                       setOpenMobile(false)
                     }
                   }}
+                  render={<Link to={p.url} className="flex items-center" />}
                 >
-                  <p.icon />
-                  <span>{p.name}</span>
+                  <p.icon style={{ width: '20px', height: '20px' }} size={72} />
+                  <span className="">{p.name}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-
-          <SidebarMenuItem className="mt-auto" key={'asdfasdfas'}>
-            <SidebarMenuButton
-              tooltip="Admin"
-              className="text-xl"
-              size="lg"
-              render={<Link to="admin" className="flex items-center" />}
-            >
-              <ShieldCog style={{ width: '20px', height: '20px' }} size={72} />
-              <span className="">Admin</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarContent>
       </Sidebar>
       <div className="flex flex-col grow max-w-full sm:items-center">
@@ -154,7 +122,6 @@ export const NavLayout = () => {
 
         <Outlet />
       </div>
-      {/* </SidebarProvider> */}
     </>
   )
 }
