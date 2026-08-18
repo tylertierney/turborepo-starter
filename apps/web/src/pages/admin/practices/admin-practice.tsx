@@ -128,7 +128,7 @@ export const AdminPractice = () => {
   const { data: users = [], meta } = usersResponse || {}
 
   return (
-    <div className="flex flex-col gap-10 pt-0 p-8 @4xl:pt-8 @7xl:min-w-5xl @7xl:self-center">
+    <div className="flex flex-col gap-10 pt-0 p-8 px-4 @lg:px-8 @4xl:pt-8 @7xl:min-w-5xl @7xl:self-center">
       <div className="flex items-end gap-6">
         <img
           className="shrink-0 rounded"
@@ -139,7 +139,7 @@ export const AdminPractice = () => {
         <div className="flex flex-col gap-2">
           <h1
             className="text-2xl @lg:text-3xl"
-            // style={{ fontFamily: 'sans-serif' }}
+            // style={{ fontFamily: 'Montserrat' }}
           >
             {name}
           </h1>
@@ -166,23 +166,23 @@ export const AdminPractice = () => {
               <h3 className="text-xl mb-4">
                 <b>Clinics ({clinics.length})</b>
               </h3>
-              <div className="flex gap-8 flex-wrap">
+              <div className="flex justify-between flex-wrap">
                 {clinics.map((c, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col rounded overflow-hidden grow w-full sm:min-w-64 sm:max-w-64 p-0 border shadow"
+                    className="flex flex-col rounded overflow-hidden grow w-full @lg:w-[48%] @lg:max-w-[48%] p-0 border shadow mb-8"
                   >
                     <img
                       // width="100%"
                       height="4rem"
                       width="auto"
                       src={c.image}
-                      className="max-h-40 sm:max-h-32"
+                      className="max-h-40 sm:max-h-48"
                       style={{
                         objectFit: 'cover',
                       }}
                     />
-                    <div className="flex flex-col p-4">
+                    <div className="flex flex-col p-4 gap-1">
                       <span>{c.name}</span>
                       <span className="flex gap-1 items-center text-xs text-muted-foreground">
                         <BuildingIcon size="12" />
