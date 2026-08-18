@@ -32,7 +32,10 @@ export const mockUser = (partial: Partial<User> = {}): User => ({
   email: randEmail(),
   phone: randPhoneNumber(),
   password: randPassword(),
-  image: `https://picsum.photos/seed/${randUuid()}/60/60`,
+  image:
+    Math.random() > 0.6
+      ? `https://picsum.photos/seed/${randUuid()}/60/60`
+      : undefined,
   createdAt: randPastDate(),
   role: (['staff', 'provider', 'admin', 'owner'] satisfies UserRole[])[
     ~~(Math.random() * 4)

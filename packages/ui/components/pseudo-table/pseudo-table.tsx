@@ -3,9 +3,17 @@ import {
   DatatableParams,
   PaginationParams,
   TablePagination,
-} from './ui/paginated-table/paginated-table'
-import { SearchInput } from './ui/input-group'
-import { Spinner } from './ui/spinner'
+} from '../ui/paginated-table/paginated-table'
+import { SearchInput } from '../ui/input-group'
+import { Spinner } from '../ui/spinner'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from '../ui/select'
 
 export type PseudoTableProps<T> = {
   rowContent: (data: T) => ReactNode
@@ -16,6 +24,10 @@ export type PseudoTableProps<T> = {
   loading?: boolean
   error?: ReactNode
   header?: ReactNode
+  sortableColumns?: Array<{
+    key: keyof T
+    label: string
+  }>
 }
 
 export const PseudoTable = <T,>({
@@ -28,6 +40,7 @@ export const PseudoTable = <T,>({
   error,
   header,
   className = '',
+  sortableColumns = [],
   ...rest
 }: PseudoTableProps<T> & ComponentProps<'div'>) => {
   return (
@@ -46,10 +59,40 @@ export const PseudoTable = <T,>({
         />
       </div>
       <div className="flex flex-col items-stretch rounded-lg border overflow-hidden">
-        <div className="flex min-h-16 p-4 items-center border-b bg-accent-foreground/5">
-          hi
+        <div className="flex justify-end min-h-16 p-4 items-center border-b bg-accent-foreground/5">
+          {!!sortableColumns.length && (
+            <Select<keyof T | undefined>
+              value={params.sort?.[0]?.by ?? undefined}
+              onValueChange={(val) => {
+                setParams((prev) => ({
+                  ...prev,
+                  sort: val
+                    ? [
+                        {
+                          by: val,
+                          order: 'asc',
+                        },
+                      ]
+                    : [],
+                }))
+              }}
+            >
+              <SelectTrigger className="border-0">Sort</SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Sort by</SelectLabel>
+                  {sortableColumns.map(({ key, label }, idx) => (
+                    <SelectItem aria-checked="false" key={idx} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
         </div>
-        <div className="min-h-72">
+
+        <div className={`relative min-h-180`}>
           {data.map((row, idx) => {
             return (
               <div
@@ -61,12 +104,12 @@ export const PseudoTable = <T,>({
             )
           })}
           {loading && (
-            <div className="flex flex-col items-center justify-center h-full">
+            <div className="absolute top-0 w-full h-full flex flex-col items-center justify-center bg-accent/30">
               <Spinner className="size-6" />
             </div>
           )}
           {Boolean(error) && (
-            <div className="flex flex-col items-center justify-center h-full">
+            <div className="absolute top-0 w-full h-full flex flex-col items-center justify-center bg-accent/30">
               {error}
             </div>
           )}

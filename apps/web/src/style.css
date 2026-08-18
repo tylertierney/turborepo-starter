@@ -4,6 +4,8 @@
 /* @import '@fontsource-variable/inter';
 @import '@fontsource-variable/manrope'; */
 /* Tell Tailwind v4 to crawl backwards out of apps/web and scan the ui packages */
+@source "./pages/**/*.{ts,tsx,js,jsx}"
+@source "./svg/**/*.{ts,tsx,js,jsx}"
 @source "../../../packages/ui/components/**/*.{ts,tsx,js,jsx}";
 @source "../../../packages/ui//**/*.{ts,tsx,js,jsx}"; /* Add this if your subfolders vary */
 
@@ -173,5 +175,16 @@ body {
 
   &:hover {
     text-decoration-line: underline;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  b {
+    font-family: 'Montserrat Alternates', sans-serif;
   }
 }

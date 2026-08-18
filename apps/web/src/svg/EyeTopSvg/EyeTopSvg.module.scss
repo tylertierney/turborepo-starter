@@ -1,0 +1,15 @@
+.svg {
+  a {
+    fill: var(--foreground);
+    font-family: serif;
+    font-size: 20px;
+  }
+
+  .line {
+    stroke: var(--foreground);
+  }
+
+  .lens {
+    fill: color-mix(in oklab, var(--accent-foreground) 50%, var(--background));
+  }
+}

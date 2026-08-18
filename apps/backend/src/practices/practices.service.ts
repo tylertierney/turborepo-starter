@@ -45,6 +45,9 @@ export class PracticesService {
     query: PaginationQueryDto,
     search?: string,
   ) {
+    // await new Promise(resolve => setTimeout(resolve, 3_000))
+    // throw new NotFoundException('something went wrong')
+
     const qb = this.usersRepository
       .createQueryBuilder('user')
       .innerJoin('user.practices', 'practice')
@@ -58,6 +61,7 @@ export class PracticesService {
         'user.active',
         'user.phone',
         'user.role',
+        'user.image',
       ])
 
     if (search) {
@@ -70,7 +74,7 @@ export class PracticesService {
     }
 
     return paginate(qb, query, {
-      sortable: ['firstName', 'lastName', 'email', 'createdAt'],
+      sortable: ['firstName', 'lastName', 'email', 'createdAt', 'role'],
     })
   }
 
@@ -85,7 +89,7 @@ export class PracticesService {
         address: true,
       },
     })
-    console.log(data)
+
     return { data, meta: { totalCount } } as PaginatedResult<ClinicEntity>
   }
 }

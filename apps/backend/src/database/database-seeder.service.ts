@@ -9,6 +9,7 @@ import {
 import { mockUserEntity, UserEntity } from '../users/user.entity.js'
 import { randNumber } from '@ngneat/falso'
 import { AddressEntity } from '../addresses/address.entity.js'
+import { Practice } from '@repo/models'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
@@ -66,49 +67,84 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     const savedClinics = await this.clinicsRepository.save(clinics)
 
-    const users = savedClinics
-      .map(c => {
-        return Array(randNumber({ min: 6, max: 20 }))
-          .fill(null)
-          .map(() => {
-            const user = mockUserEntity({
-              clinics: [c],
-              practices: [c.practice],
-            })
-            return user
-          })
-      })
-      .flat()
-
-    await this.usersRepository.save(users)
-
-    // const clinics = practices
-    //   .map(({ id: practiceId }) =>
-    //     Array(randNumber({ min: 1, max: 5 }))
+    // const users = savedClinics
+    //   .map(c => {
+    //     return Array(randNumber({ min: 6, max: 20 }))
     //       .fill(null)
-    //       .map(() => mockClinicEntity({ practiceId })),
-    //   )
+    //       .map(() => {
+    //         const user = mockUserEntity({
+    //           clinics: [c],
+    //           practices: [c.practice],
+    //         })
+    //         return user
+    //       })
+    //   })
     //   .flat()
 
-    // await this.clinicsRepository.save(clinics)
+    // await this.usersRepository.save(users)
 
-    // const savedUsers = await this.usersRepository.save(users)
+    const practiceMap: Record<string, ClinicEntity[]> = {}
+    for (const c of savedClinics) {
+      if (c.practice.id in practiceMap) {
+        practiceMap[c.practice.id].push(c)
+      } else {
+        practiceMap[c.practice.id] = [c]
+      }
+    }
 
-    // const usersWithPractices: UserEntity[] = savedUsers.map(u => {
-    //   const smallAmountOfRandomPractices = savedPractices.filter(
-    //     () => Math.random() < 0.1,
-    //   )
+    let fakeUsers: UserEntity[] = []
+    for (const [p, clinics] of Object.entries(practiceMap)) {
+      const owners = Array(randNumber({ min: 1, max: 3 }))
+        .fill(null)
+        .map(() => {
+          return mockUserEntity({
+            role: 'owner',
+            clinics,
+            practices: [clinics[0].practice],
+          })
+        })
 
-    //   return {
-    //     ...u,
-    //     practices: smallAmountOfRandomPractices,
-    //   }
-    // })
+      const admins = Array(randNumber({ min: 1, max: 4 }))
+        .fill(null)
+        .map(() => {
+          return mockUserEntity({
+            role: 'admin',
+            clinics,
+            practices: [clinics[0].practice],
+          })
+        })
 
-    // await this.usersRepository.save(usersWithPractices)
+      const providers = clinics
+        .map(c =>
+          Array(randNumber({ min: 2, max: 6 }))
+            .fill(null)
+            .map(() => {
+              return mockUserEntity({
+                role: 'provider',
+                clinics: [c],
+                practices: [clinics[0].practice],
+              })
+            }),
+        )
+        .flat()
 
-    // this.logger.log(
-    //   `Seeded ${savedPractices.length} practices into the database.`,
-    // )
+      const staff = clinics
+        .map(c =>
+          Array(randNumber({ min: 4, max: 10 }))
+            .fill(null)
+            .map(() => {
+              return mockUserEntity({
+                role: 'staff',
+                clinics: [c],
+                practices: [clinics[0].practice],
+              })
+            }),
+        )
+        .flat()
+
+      fakeUsers = [...fakeUsers, ...owners, ...admins, ...providers, ...staff]
+    }
+
+    await this.usersRepository.save(fakeUsers)
   }
 }

@@ -59,8 +59,8 @@ export const AdminPractices = () => {
   const selectedPractice = practices.find((p) => p.id === selectedPracticeId)
 
   return (
-    <div className="flex grow">
-      <div className="hidden md:flex flex-col min-w-xs max-w-xs sm:max-w-sm sm:min-w-sm border-r h-[calc(100vh-4rem)] sticky top-16">
+    <div className="flex grow @container">
+      <div className="flex-col hidden max-w-2xs min-w-2xs border-r h-[calc(100vh-4rem)] sticky top-16 @4xl:flex @5xl:min-w-xs @5xl:max-w-xs">
         <div className="flex justify-between p-4 border-b items-center flex-wrap gap-2">
           <h3>
             <b>{totalCount} Practices</b>
@@ -92,7 +92,7 @@ export const AdminPractices = () => {
         </div>
       </div>
       <div className="flex flex-col grow overflow-y-auto">
-        <div className="md:hidden flex items-center justify-end p-8">
+        <div className="@4xl:hidden flex items-center justify-end p-8">
           <Select<Practice | undefined>
             value={selectedPractice}
             onValueChange={(p) => {
@@ -106,7 +106,7 @@ export const AdminPractices = () => {
                 {selectedPractice?.name || 'Choose a practice'}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-106 overflow-y-auto">
               <SelectGroup>
                 <SelectLabel>Practices</SelectLabel>
                 {practices.map((p) => (

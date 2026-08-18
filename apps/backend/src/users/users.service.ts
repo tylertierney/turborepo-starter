@@ -17,6 +17,11 @@ export class UsersService {
     query: PaginationQueryDto,
     search?: string,
   ): Promise<PaginatedResult<UserEntity>> {
+    const delay = new Promise(resolve => {
+      setTimeout(() => resolve('resolved'), 3_000)
+    })
+    await delay
+
     const qb = this.usersRepository.createQueryBuilder('user')
 
     if (search) {

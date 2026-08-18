@@ -15,6 +15,7 @@ import {
 } from '@repo/ui'
 import { ArrowUpRightIcon, BuildingIcon, MapPinIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useDebouncedIsFetching } from '../../../hooks/useDebouncedIsFetching'
 
 export const AdminPractice = () => {
   const { practiceId: selectedPracticeId } = useParams()
@@ -40,7 +41,7 @@ export const AdminPractice = () => {
   const [usersDatatableParams, setUsersDatatableParams] = useState<
     DatatableParams<User>
   >({
-    pageSize: 20,
+    pageSize: 10,
     currentPage: 1,
     sort: [
       {
@@ -50,7 +51,12 @@ export const AdminPractice = () => {
     ],
     search: '',
   })
-  const { data: usersResponse } = useQuery({
+  const {
+    data: usersResponse,
+    isFetching: isFetchingUsers,
+    error: usersError,
+    refetch: refetchUsers,
+  } = useQuery({
     queryKey: [
       `admin-practices-id-users=${selectedPracticeId}`,
       JSON.stringify(usersDatatableParams),
@@ -73,6 +79,12 @@ export const AdminPractice = () => {
       const json = (await res.json()) as PaginatedResult<User>
       return json
     },
+    placeholderData: (prev) => prev,
+  })
+
+  const isFetchingUsersWithDebounce = useDebouncedIsFetching({
+    isFetching: isFetchingUsers,
+    delay: 200,
   })
 
   const { data: clinicsResponse } = useQuery({
@@ -93,7 +105,6 @@ export const AdminPractice = () => {
         const json = (await res.json()) as PaginatedResult<Clinic>
         return json
       } catch (err) {
-        console.log('ERROR', err)
         return {
           data: [],
           meta: {
@@ -106,6 +117,7 @@ export const AdminPractice = () => {
         }
       }
     },
+    placeholderData: (prev) => prev,
   })
 
   const { data: clinics = [] } = clinicsResponse || {}
@@ -116,7 +128,7 @@ export const AdminPractice = () => {
   const { data: users = [], meta } = usersResponse || {}
 
   return (
-    <div className="flex flex-col gap-10 pt-0 p-8 md:pt-8">
+    <div className="flex flex-col gap-10 pt-0 p-8 @4xl:pt-8 @7xl:min-w-5xl @7xl:self-center">
       <div className="flex items-end gap-6">
         <img
           className="shrink-0 rounded"
@@ -125,7 +137,12 @@ export const AdminPractice = () => {
           width="120"
         />
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl">{name}</h1>
+          <h1
+            className="text-2xl @lg:text-3xl"
+            // style={{ fontFamily: 'sans-serif' }}
+          >
+            {name}
+          </h1>
           <Button
             variant="link"
             className="text-link justify-start p-0"
@@ -169,8 +186,10 @@ export const AdminPractice = () => {
                       <span>{c.name}</span>
                       <span className="flex gap-1 items-center text-xs text-muted-foreground">
                         <BuildingIcon size="12" />
-                        <span>{c.address?.street1}</span>
-                        {c.address?.street2 && `, ${c.address.street2}`}
+                        <span>
+                          {c.address?.street1}
+                          {c.address?.street2 && `, ${c.address.street2}`}
+                        </span>
                       </span>
                       <span className="flex gap-1 items-center text-xs text-muted-foreground">
                         <MapPinIcon size="12" />
@@ -183,79 +202,14 @@ export const AdminPractice = () => {
                 ))}
               </div>
             </section>
-            {/* <PaginatedTable<User>
-              className="md:w-full"
-              params={usersDatatableParams}
-              setParams={setUsersDatatableParams}
-              data={users}
-              totalCount={meta?.totalCount ?? 0}
-              tableClassName="md:table-layout-fixed"
-              header={
-                <h3 className="text-xl">
-                  <b>Users</b>
-                </h3>
-              }
-              defaultColDef={{
-                style: {
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                },
-              }}
-              columns={[
-                {
-                  headerName: 'ID',
-                  field: 'id',
-                  cellRenderer: ({ id }) => (
-                    <code className="text-xs">{id}</code>
-                  ),
-                  style: {
-                    width: '80px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    minWidth: '80px',
-                    maxWidth: '80px',
-                    paddingRight: '20px',
-                  },
-                },
-                {
-                  headerName: 'First Name',
-                  field: 'firstName',
-                  sortable: true,
-                },
-                {
-                  headerName: 'Last Name',
-                  field: 'lastName',
-                  sortable: true,
-                },
-                {
-                  headerName: 'Email',
-                  field: 'email',
-                  sortable: true,
-                  cellRenderer: ({ email }) => (
-                    <a className="text-link" href={`mailto:${email}`}>
-                      {email}
-                    </a>
-                  ),
-                },
-                {
-                  headerName: 'Created At',
-                  field: 'createdAt',
-                  sortable: true,
-                  cellRenderer: ({ createdAt }) =>
-                    new Date(createdAt).toLocaleDateString('en-us'),
-                },
-              ]}
-            /> */}
             <UserPseudoTable
               params={usersDatatableParams}
               setParams={setUsersDatatableParams}
               data={users}
               totalCount={meta?.totalCount ?? 0}
-              header={
-                <h3 className="text-xl">
-                  <b>Users</b>
-                </h3>
-              }
+              loading={isFetchingUsersWithDebounce}
+              error={Boolean(usersError)}
+              onRefresh={refetchUsers}
             />
           </div>
         </TabsContent>
