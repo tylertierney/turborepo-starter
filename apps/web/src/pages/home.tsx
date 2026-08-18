@@ -1,19 +1,9 @@
 import { toast, UserPseudoTable } from '@repo/ui'
-import {
-  Button,
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  convertDatatableParamsToQueryString,
-} from '@repo/ui'
+import { convertDatatableParamsToQueryString } from '@repo/ui'
 import { PaginatedResult, User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
-import { PaginatedTable, DatatableParams } from '@repo/ui'
+import { DatatableParams } from '@repo/ui'
 import { useState } from 'react'
-import { ArrowUpRightIcon, RefreshCcw, User as UserIcon } from 'lucide-react'
 import { useDebouncedIsFetching } from '../hooks/useDebouncedIsFetching'
 import { EyeTopSvg } from '../svg/EyeTopSvg/EyeTopSvg'
 
@@ -154,13 +144,10 @@ export default function Home() {
     //     }
     //   ></PaginatedTable>
     // </div>
-    <div className="flex flex-col w-full p-8 md:max-w-6xl">
-      {/* <img src="eye-side.svg" className="grayscale-25" /> */}
-      {/* <img src="eye-top.svg" className="grayscale-75" /> */}
+    <div className="flex flex-col w-full p-4 sm:p-8 md:max-w-6xl">
       <EyeTopSvg
         preserveAspectRatio="true"
         className="w-full grayscale-50 aspect-auto"
-        // className="w-full aspect-auto"
       />
       <UserPseudoTable
         params={datatableParams}

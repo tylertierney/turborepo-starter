@@ -44,10 +44,14 @@ export const PseudoTable = <T,>({
   ...rest
 }: PseudoTableProps<T> & ComponentProps<'div'>) => {
   return (
-    <div className={`flex flex-col items-stretch gap-4 ${className}`} {...rest}>
+    <div
+      className={`@container flex flex-col items-stretch gap-4 ${className}`}
+      {...rest}
+    >
       <div className="flex">
         <div className="flex items-center grow">{header}</div>
         <SearchInput
+          className="hidden @lg:flex max-w-50"
           value={params.search ?? ''}
           onChange={(e) => {
             setParams((prev) => ({
@@ -59,37 +63,50 @@ export const PseudoTable = <T,>({
         />
       </div>
       <div className="flex flex-col items-stretch rounded-lg border overflow-hidden">
-        <div className="flex justify-end min-h-16 p-4 items-center border-b bg-accent-foreground/5">
-          {!!sortableColumns.length && (
-            <Select<keyof T | undefined>
-              value={params.sort?.[0]?.by ?? undefined}
-              onValueChange={(val) => {
-                setParams((prev) => ({
-                  ...prev,
-                  sort: val
-                    ? [
-                        {
-                          by: val,
-                          order: 'asc',
-                        },
-                      ]
-                    : [],
-                }))
-              }}
-            >
-              <SelectTrigger className="border-0">Sort</SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Sort by</SelectLabel>
-                  {sortableColumns.map(({ key, label }, idx) => (
-                    <SelectItem aria-checked="false" key={idx} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          )}
+        <div className="flex flex-col justify-center min-h-16 border-b bg-accent-foreground/5 p-2 gap-2">
+          <SearchInput
+            className="flex @lg:hidden w-full"
+            value={params.search ?? ''}
+            onChange={(e) => {
+              setParams((prev) => ({
+                ...prev,
+                search: e.target.value,
+                currentPage: 1,
+              }))
+            }}
+          />
+          <div className="flex justify-end items-center">
+            {!!sortableColumns.length && (
+              <Select<keyof T | undefined>
+                value={params.sort?.[0]?.by ?? undefined}
+                onValueChange={(val) => {
+                  setParams((prev) => ({
+                    ...prev,
+                    sort: val
+                      ? [
+                          {
+                            by: val,
+                            order: 'asc',
+                          },
+                        ]
+                      : [],
+                  }))
+                }}
+              >
+                <SelectTrigger className="border-0">Sort</SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Sort by</SelectLabel>
+                    {sortableColumns.map(({ key, label }, idx) => (
+                      <SelectItem aria-checked="false" key={idx} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </div>
 
         <div className={`relative min-h-180`}>

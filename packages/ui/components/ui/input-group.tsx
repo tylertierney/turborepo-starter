@@ -148,12 +148,13 @@ function InputGroupTextarea({
 }
 
 function SearchInput({
+  className = '',
   value = '',
   onChange,
   ...props
 }: React.ComponentProps<'input'>) {
   return (
-    <InputGroup className="max-w-50">
+    <InputGroup className={`${className}`}>
       <InputGroupInput
         type="search"
         placeholder="Search"
