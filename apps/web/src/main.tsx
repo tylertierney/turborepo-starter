@@ -1,4 +1,4 @@
-import { SidebarProvider } from '@repo/ui'
+import { Button, SidebarProvider } from '@repo/ui'
 import {
   Empty,
   EmptyDescription,
@@ -37,6 +37,18 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Navigate to="home" replace />} />
+              <Route
+                path="login"
+                element={
+                  <div className="flex flex-col h-screen justify-center items-center gap-8">
+                    <h1>hello from login</h1>
+
+                    <Button size="lg" variant="default" className="p-8 text-lg">
+                      login
+                    </Button>
+                  </div>
+                }
+              />
               <Route
                 element={
                   <SidebarProvider>
