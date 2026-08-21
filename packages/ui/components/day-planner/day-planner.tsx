@@ -106,9 +106,10 @@ export const DayPlanner = ({
                           width: columnWidth,
                         }}
                       >
-                        <div className="flex h-[50%] border-dashed border-b">
-                          {/* hi */}
-                        </div>
+                        <div
+                          className="flex h-[50%] border-dashed border-b"
+                          onClick={() => console.log('hi')}
+                        ></div>
                         <div className="flex h-[50%] border-b"></div>
                       </div>
                     ))}
@@ -120,65 +121,31 @@ export const DayPlanner = ({
             className="absolute top-0 left-18 w-[calc(100%-72px)]"
             style={{
               height: '100%',
+              pointerEvents: 'none',
             }}
           >
             {plans.map((plan, planIdx) => {
-              return (
-                <div
-                  key={planIdx}
-                  className="absolute last-of-type:border-0"
-                  style={{
-                    width: columnWidth,
-                    // left: planIdx * (100 / plans.length) + '%',
-                    left: `calc(${planIdx} * ${columnWidth})`,
-                    top: 0,
-                    height: '100%',
-                  }}
-                >
-                  {plan.appointments.map((appt, idx) => {
-                    const top = (appt.start / millisecondsInDay) * 100
-                    const duration = Math.abs(appt.end - appt.start)
-                    const height = (duration / millisecondsInDay) * 100
+              return plan.appointments.map((appt, idx) => {
+                const top = (appt.start / millisecondsInDay) * 100
+                const duration = Math.abs(appt.end - appt.start)
+                const height = (duration / millisecondsInDay) * 100
 
-                    return (
-                      <div
-                        key={planIdx * plan.appointments.length + idx}
-                        className={cn(
-                          'absolute w-[96%] left-[2%] rounded-sm',
-                          appt.color ?? 'bg-cyan-400/20',
-                        )}
-                        style={{
-                          top: top + '%',
-                          height: height + '%',
-                          // top: '10%',
-                          // width: '96%',
-                          // left: '4%',
-                          // borderRadius: '6px',
-                          // width: (planIdx + 1) * (100 / plans.length) + '%',
-                          // left: planIdx * (100 / plans.length) + '%',
-                        }}
-                      >
-                        hi
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-              // return plan.appointments.map((appt, idx) => {
-              //   return (
-              //     <div
-              //       key={planIdx * plan.appointments.length + idx}
-              //       className="absolute bg-orange-200"
-              //       style={{
-              //         top: 0,
-              //         width: (planIdx + 1) * (100 / plans.length) + '%',
-              //         left: planIdx * (100 / plans.length) + '%',
-              //       }}
-              //     >
-              //       hi
-              //     </div>
-              //   )
-              // })
+                return (
+                  <div
+                    key={planIdx * plan.appointments.length + idx}
+                    className={cn(
+                      'absolute w-[96%] left-[2%] rounded-sm',
+                      appt.color ?? 'bg-cyan-400/20',
+                    )}
+                    style={{
+                      top: top + '%',
+                      height: height + '%',
+                      left: `calc(${planIdx} * ${columnWidth} + 8px)`,
+                      width: `calc(${columnWidth} - 8px)`,
+                    }}
+                  ></div>
+                )
+              })
             })}
           </div>
         </div>
