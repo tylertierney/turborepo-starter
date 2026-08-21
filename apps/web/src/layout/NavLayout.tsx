@@ -20,6 +20,7 @@ import {
 } from '@repo/ui'
 import {
   ArrowRightSquare,
+  Calendar,
   ChevronDown,
   ChevronsUpDown,
   House,
@@ -78,6 +79,11 @@ export const NavLayout = () => {
       name: 'Home',
       url: '',
       icon: (props: LucideProps) => <House {...props} />,
+    },
+    {
+      name: 'Schedule',
+      url: 'schedule',
+      icon: (props: LucideProps) => <Calendar {...props} />,
     },
     {
       name: 'Admin',

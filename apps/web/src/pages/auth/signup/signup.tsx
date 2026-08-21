@@ -221,6 +221,7 @@ export const SignUp = () => {
                           First Name
                         </FieldLabel>
                         <Input
+                          required={true}
                           id="firstName"
                           placeholder="John"
                           onChange={(e) => f.handleChange(e.target.value)}
@@ -256,6 +257,7 @@ export const SignUp = () => {
                           Last Name
                         </FieldLabel>
                         <Input
+                          required={true}
                           id="lastName"
                           placeholder="Doe"
                           onChange={(e) => f.handleChange(e.target.value)}
@@ -288,6 +290,7 @@ export const SignUp = () => {
                         <Tooltip>
                           <TooltipTrigger>
                             <Input
+                              required={true}
                               id="email"
                               type="email"
                               placeholder="johndoe@email.com"
@@ -328,6 +331,7 @@ export const SignUp = () => {
                           Password
                         </FieldLabel>
                         <Input
+                          required={true}
                           id="password"
                           placeholder=""
                           type="password"
@@ -374,6 +378,7 @@ export const SignUp = () => {
                           Confirm Password
                         </FieldLabel>
                         <Input
+                          required={true}
                           id="confirmPassword"
                           placeholder=""
                           type="password"

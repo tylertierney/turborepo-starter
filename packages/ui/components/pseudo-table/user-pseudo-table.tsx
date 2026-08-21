@@ -120,7 +120,7 @@ export const UserPseudoTable = ({
             </div>
             <div className="flex flex-col grow">
               <b className="@md:text-lg">{fullName}</b>
-              <div className="text-sm flex flex-col gap-1 @xl:flex-row @xl:gap-2 text-muted-foreground">
+              <div className="text-sm/tight flex flex-col gap-1 @xl:flex-row @xl:gap-2 text-muted-foreground">
                 <a
                   href={`mailto:${email}`}
                   className={`${overflowClasses} text-nowrap hover:text-link cursor-pointer`}

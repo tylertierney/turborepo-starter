@@ -22,6 +22,8 @@ import { AdminPractice } from './pages/admin/practices/admin-practice'
 import { createAuthClient } from 'better-auth/react'
 import { SignUp, signUpLoader } from './pages/auth/signup/signup'
 import { Login } from './pages/auth/login/login'
+import { ProtectedRoute } from './guards/protected-route'
+import { Schedule } from './pages/schedule/schedule'
 
 export const authClient = createAuthClient()
 
@@ -43,7 +45,7 @@ const App = () => (
             router={createBrowserRouter([
               {
                 path: '/',
-                element: <Navigate to="app" replace />,
+                element: <p>hiii</p>,
               },
               {
                 path: 'signup/:invitationId',
@@ -56,60 +58,69 @@ const App = () => (
               },
               {
                 path: 'app',
-                element: (
-                  <SidebarProvider>
-                    <NavLayout />
-                  </SidebarProvider>
-                ),
+                element: <ProtectedRoute />,
                 children: [
                   {
-                    index: true,
-                    element: <Home />,
-                  },
-                  {
-                    path: 'admin',
-                    element: <Admin />,
+                    path: '',
+                    element: (
+                      <SidebarProvider>
+                        <NavLayout />
+                      </SidebarProvider>
+                    ),
                     children: [
                       {
                         index: true,
-                        element: <Navigate to="practices" replace />,
+                        element: <Home />,
                       },
                       {
-                        path: 'practices',
-                        element: <AdminPractices />,
+                        path: 'schedule',
+                        element: <Schedule />,
+                      },
+                      {
+                        path: 'admin',
+                        element: <Admin />,
                         children: [
                           {
                             index: true,
-                            element: (
-                              <Empty className="place-self-center w-full">
-                                <EmptyHeader>
-                                  <EmptyMedia variant="icon">
-                                    <Building />
-                                  </EmptyMedia>
-                                  <EmptyTitle>Select A Practice</EmptyTitle>
-                                  <EmptyDescription>
-                                    Select a practice to review activity, users,
-                                    account status, etc.
-                                  </EmptyDescription>
-                                </EmptyHeader>
-                              </Empty>
-                            ),
+                            element: <Navigate to="practices" replace />,
                           },
                           {
-                            path: ':practiceId',
-                            element: <AdminPractice />,
+                            path: 'practices',
+                            element: <AdminPractices />,
+                            children: [
+                              {
+                                index: true,
+                                element: (
+                                  <Empty className="place-self-center w-full">
+                                    <EmptyHeader>
+                                      <EmptyMedia variant="icon">
+                                        <Building />
+                                      </EmptyMedia>
+                                      <EmptyTitle>Select A Practice</EmptyTitle>
+                                      <EmptyDescription>
+                                        Select a practice to review activity,
+                                        users, account status, etc.
+                                      </EmptyDescription>
+                                    </EmptyHeader>
+                                  </Empty>
+                                ),
+                              },
+                              {
+                                path: ':practiceId',
+                                element: <AdminPractice />,
+                              },
+                            ],
                           },
                         ],
                       },
+                      {
+                        path: '*',
+                        element: <Navigate to="/" replace />,
+                      },
                     ],
-                  },
-                  {
-                    path: '*',
-                    element: <Navigate to="/" replace />,
                   },
                 ],
               },
-              {},
             ])}
           />
         </TooltipProvider>

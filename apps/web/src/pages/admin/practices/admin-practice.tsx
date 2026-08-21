@@ -5,6 +5,7 @@ import {
   Button,
   convertDatatableParamsToQueryString,
   DatatableParams,
+  DayPlanner,
   Empty,
   Tabs,
   TabsContent,
@@ -125,6 +126,10 @@ export const AdminPractice = () => {
   if (!data) return <Empty>No practice details found</Empty>
 
   const { name, image, url } = data
+  const fullUrl = url?.startsWith('http') ? url : `https://${url}`
+  const parsedUrl = new URL(fullUrl).hostname
+  const prettyUrl = parsedUrl.replace(/^wwww\./, '')
+
   const { data: users = [], meta } = usersResponse || {}
 
   return (
@@ -137,19 +142,14 @@ export const AdminPractice = () => {
           width="120"
         />
         <div className="flex flex-col gap-2">
-          <h1
-            className="text-2xl @lg:text-3xl"
-            // style={{ fontFamily: 'Montserrat' }}
-          >
-            {name}
-          </h1>
+          <h1 className="text-2xl @lg:text-3xl">{name}</h1>
           <Button
             variant="link"
             className="text-link justify-start p-0"
             nativeButton={false}
             render={
               <a href={url} target="_blank">
-                {url} <ArrowUpRightIcon />
+                {prettyUrl} <ArrowUpRightIcon />
               </a>
             }
           />
@@ -159,6 +159,7 @@ export const AdminPractice = () => {
       <Tabs className="mb-60">
         <TabsList variant="line" className="mb-10">
           <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="schedule">Schedule</TabsTrigger>
         </TabsList>
         <TabsContent value="about">
           <div className="flex flex-col items-stretch gap-16 pt-8 md:max-w-6xl">
@@ -212,6 +213,9 @@ export const AdminPractice = () => {
               onRefresh={refetchUsers}
             />
           </div>
+        </TabsContent>
+        <TabsContent value="schedule">
+          <DayPlanner className="border-blue-400" />
         </TabsContent>
       </Tabs>
     </div>

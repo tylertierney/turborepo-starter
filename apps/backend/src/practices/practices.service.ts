@@ -57,6 +57,7 @@ export class PracticesService {
         'user.id',
         'user.firstName',
         'user.lastName',
+        'user.email',
         'user.createdAt',
         'user.active',
         'user.phone',
