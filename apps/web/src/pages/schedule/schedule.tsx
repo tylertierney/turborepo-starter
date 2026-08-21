@@ -52,7 +52,32 @@ export const Schedule = () => {
                   {
                     start: millisecondsInHour * 1,
                     end: millisecondsInHour * 2.5,
-                    color: 'bg-green-500/50',
+                    color: 'bg-green-400',
+                  },
+                  {
+                    start: millisecondsInHour * 1.5,
+                    end: millisecondsInHour * 3,
+                    color: 'bg-green-400',
+                  },
+                  {
+                    start: millisecondsInHour * 2.75,
+                    end: millisecondsInHour * 3.5,
+                    color: 'bg-green-400',
+                  },
+                  {
+                    start: millisecondsInHour * 2.75,
+                    end: millisecondsInHour * 3.5,
+                    color: 'bg-green-400',
+                  },
+                  {
+                    start: millisecondsInHour * 2.75,
+                    end: millisecondsInHour * 5,
+                    color: 'bg-green-400',
+                  },
+                  {
+                    start: millisecondsInHour * 9,
+                    end: millisecondsInHour * 10,
+                    color: 'bg-green-400',
                   },
                 ],
               },
@@ -60,7 +85,7 @@ export const Schedule = () => {
                 title: 'Karen',
                 appointments: [
                   {
-                    start: millisecondsInHour * 4.5,
+                    start: millisecondsInHour * 3,
                     end: millisecondsInHour * 8.5,
                     color: 'bg-purple-500/50',
                   },

@@ -12,6 +12,108 @@ import {
 } from '../ui/select'
 import { millisecondsInDay } from 'date-fns/constants'
 
+type ItemWithStackIdx<T extends object> = T & { stackIndex: number }
+
+// type StackItem<T> = T & {
+//   stackIndex: number
+//   stackSize: number
+// }
+
+// const addStackIdxToAppts = <T extends { start: number; end: number }>(
+//   items: T[] = [],
+// ): StackItem<T>[] => {
+//   const sorted = items
+//     .toSorted((a, b) => a.start - b.start)
+//     .map((item) => ({
+//       ...item,
+//       stackIndex: 0,
+//       stackSize: 1,
+//     }))
+
+//   const res: StackItem<T>[] = []
+
+//   for (const curr of sorted) {
+//     const overlapping = res.filter(
+//       (item) => item.end > curr.start && item.start < curr.end,
+//     )
+
+//     const stackSize = overlapping.length + 1
+
+//     res.push({
+//       ...curr,
+//       stackIndex: overlapping.length,
+//       stackSize,
+//     })
+//   }
+
+//   return res
+// }
+
+// const addStackIdxToAppts = <T extends { start: number; end: number }>(
+//   items: T[] = [],
+// ): Stack<T> => {
+//   const sorted: Stack<T> = items
+//     .toSorted((a, b) => a.start - b.start)
+//     .map((item) => ({ ...item, stackIndex: 0 }))
+
+//   const res: Stack<T> = []
+
+//   for (let i = 0; i < sorted.length; i++) {
+//     if (i <= 0) {
+//       res.push(sorted[i])
+//       continue
+//     }
+
+//     let curr = sorted[i]
+//     let prevItem = res[i - 1]
+
+//     if (prevItem.end > curr.start) {
+//       let j = i
+//       const itemsWithSimilarStarts: Stack<T> = []
+//       console.log(prevItem)
+//       while (j < sorted.length && curr.start === prevItem.start) {
+//         curr = sorted[j]
+//         prevItem = res[j - 1]
+//         itemsWithSimilarStarts.push(curr)
+//         j++
+//       }
+
+//       if (itemsWithSimilarStarts.length) {
+//         const offset = ~~(12 / itemsWithSimilarStarts.length)
+//         for (let x = 0; x < itemsWithSimilarStarts.length; x++) {
+//           res.push({
+//             ...itemsWithSimilarStarts[x],
+//             stackIndex: x * offset + sorted[i].stackIndex,
+//           })
+//         }
+//       }
+
+//       res.push({ ...curr, stackIndex: (prevItem.stackIndex || 0) + 1 })
+//     } else {
+//       res.push(curr)
+//     }
+//   }
+//   return res
+// }
+
+const addStackIdxToAppts = <T extends { start: number; end: number }>(
+  items: T[] = [],
+): ItemWithStackIdx<T>[] => {
+  const sorted = items.toSorted((a, b) => a.start - b.start)
+
+  return sorted.reduce((acc, curr) => {
+    if (!acc.length) return [...acc, { ...curr, stackIndex: 0 }]
+
+    const prevItem = acc.at(-1) as ItemWithStackIdx<T>
+
+    if (prevItem.end > curr.start) {
+      return [...acc, { ...curr, stackIndex: (prevItem.stackIndex || 0) + 1 }]
+    }
+
+    return [...acc, { ...curr, stackIndex: 0 }]
+  }, [] as ItemWithStackIdx<T>[])
+}
+
 type Interval = 5 | 10 | 15 | 30 | 60
 
 const intervalOpts: Interval[] = [5, 10, 15, 30, 60]
@@ -125,23 +227,27 @@ export const DayPlanner = ({
             }}
           >
             {plans.map((plan, planIdx) => {
-              return plan.appointments.map((appt, idx) => {
+              const appts = addStackIdxToAppts(plan.appointments)
+
+              return appts.map((appt, idx) => {
                 const top = (appt.start / millisecondsInDay) * 100
                 const duration = Math.abs(appt.end - appt.start)
                 const height = (duration / millisecondsInDay) * 100
+                const stackIdx = appt.stackIndex
+                const STACK_OFFSET = 16
 
                 return (
                   <div
-                    key={planIdx * plan.appointments.length + idx}
+                    key={planIdx * appts.length + idx}
                     className={cn(
-                      'absolute w-[96%] left-[2%] rounded-sm',
+                      'absolute rounded-sm border shadow-lg hover:scale',
                       appt.color ?? 'bg-cyan-400/20',
                     )}
                     style={{
                       top: top + '%',
                       height: height + '%',
-                      left: `calc(${planIdx} * ${columnWidth} + 8px)`,
-                      width: `calc(${columnWidth} - 8px)`,
+                      left: `calc(${planIdx} * ${columnWidth} + 8px + ${stackIdx * STACK_OFFSET}px)`,
+                      width: `calc(${columnWidth} - 8px - ${stackIdx * STACK_OFFSET}px)`,
                     }}
                   ></div>
                 )
