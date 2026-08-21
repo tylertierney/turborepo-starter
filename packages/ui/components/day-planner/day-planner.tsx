@@ -12,106 +12,66 @@ import {
 } from '../ui/select'
 import { millisecondsInDay } from 'date-fns/constants'
 
-type ItemWithStackIdx<T extends object> = T & { stackIndex: number }
-
-// type StackItem<T> = T & {
-//   stackIndex: number
-//   stackSize: number
-// }
-
-// const addStackIdxToAppts = <T extends { start: number; end: number }>(
-//   items: T[] = [],
-// ): StackItem<T>[] => {
-//   const sorted = items
-//     .toSorted((a, b) => a.start - b.start)
-//     .map((item) => ({
-//       ...item,
-//       stackIndex: 0,
-//       stackSize: 1,
-//     }))
-
-//   const res: StackItem<T>[] = []
-
-//   for (const curr of sorted) {
-//     const overlapping = res.filter(
-//       (item) => item.end > curr.start && item.start < curr.end,
-//     )
-
-//     const stackSize = overlapping.length + 1
-
-//     res.push({
-//       ...curr,
-//       stackIndex: overlapping.length,
-//       stackSize,
-//     })
-//   }
-
-//   return res
-// }
-
-// const addStackIdxToAppts = <T extends { start: number; end: number }>(
-//   items: T[] = [],
-// ): Stack<T> => {
-//   const sorted: Stack<T> = items
-//     .toSorted((a, b) => a.start - b.start)
-//     .map((item) => ({ ...item, stackIndex: 0 }))
-
-//   const res: Stack<T> = []
-
-//   for (let i = 0; i < sorted.length; i++) {
-//     if (i <= 0) {
-//       res.push(sorted[i])
-//       continue
-//     }
-
-//     let curr = sorted[i]
-//     let prevItem = res[i - 1]
-
-//     if (prevItem.end > curr.start) {
-//       let j = i
-//       const itemsWithSimilarStarts: Stack<T> = []
-//       console.log(prevItem)
-//       while (j < sorted.length && curr.start === prevItem.start) {
-//         curr = sorted[j]
-//         prevItem = res[j - 1]
-//         itemsWithSimilarStarts.push(curr)
-//         j++
-//       }
-
-//       if (itemsWithSimilarStarts.length) {
-//         const offset = ~~(12 / itemsWithSimilarStarts.length)
-//         for (let x = 0; x < itemsWithSimilarStarts.length; x++) {
-//           res.push({
-//             ...itemsWithSimilarStarts[x],
-//             stackIndex: x * offset + sorted[i].stackIndex,
-//           })
-//         }
-//       }
-
-//       res.push({ ...curr, stackIndex: (prevItem.stackIndex || 0) + 1 })
-//     } else {
-//       res.push(curr)
-//     }
-//   }
-//   return res
-// }
+type ItemWithStackIdx<T extends object> = T & {
+  stackIndex: number
+  sameStartIndex: number
+  sameStartCount: number
+}
 
 const addStackIdxToAppts = <T extends { start: number; end: number }>(
   items: T[] = [],
+  dangerzone = 10 * 60 * 1000, // 10 minutes
 ): ItemWithStackIdx<T>[] => {
   const sorted = items.toSorted((a, b) => a.start - b.start)
 
-  return sorted.reduce((acc, curr) => {
-    if (!acc.length) return [...acc, { ...curr, stackIndex: 0 }]
+  if (!sorted.length) return []
 
-    const prevItem = acc.at(-1) as ItemWithStackIdx<T>
+  // First establish groups of appointments whose starts are
+  // within `dangerzone` of one another.
+  const groups: T[][] = []
+  let currentGroup: T[] = [sorted[0]]
 
-    if (prevItem.end > curr.start) {
-      return [...acc, { ...curr, stackIndex: (prevItem.stackIndex || 0) + 1 }]
+  for (let i = 1; i < sorted.length; i++) {
+    const curr = sorted[i]
+    const prev = sorted[i - 1]
+
+    if (curr.start - prev.start <= dangerzone) {
+      currentGroup.push(curr)
+    } else {
+      groups.push(currentGroup)
+      currentGroup = [curr]
     }
+  }
 
-    return [...acc, { ...curr, stackIndex: 0 }]
-  }, [] as ItemWithStackIdx<T>[])
+  groups.push(currentGroup)
+
+  // Flatten the groups while preserving the existing stack behavior.
+  const result: ItemWithStackIdx<T>[] = []
+
+  for (const group of groups) {
+    const sameStartCount = group.length
+
+    for (
+      let sameStartIndex = 0;
+      sameStartIndex < group.length;
+      sameStartIndex++
+    ) {
+      const curr = group[sameStartIndex]
+      const prevItem = result.at(-1)
+
+      const stackIndex =
+        prevItem && prevItem.end > curr.start ? prevItem.stackIndex + 1 : 0
+
+      result.push({
+        ...curr,
+        stackIndex,
+        sameStartIndex,
+        sameStartCount,
+      })
+    }
+  }
+
+  return result
 }
 
 type Interval = 5 | 10 | 15 | 30 | 60
@@ -234,20 +194,32 @@ export const DayPlanner = ({
                 const duration = Math.abs(appt.end - appt.start)
                 const height = (duration / millisecondsInDay) * 100
                 const stackIdx = appt.stackIndex
+
                 const STACK_OFFSET = 16
+
+                const sameStart = appt.sameStartCount > 1
+
+                const left = sameStart
+                  ? `calc(${planIdx} * ${columnWidth} + 8px + ((${columnWidth} - 8px) / ${appt.sameStartCount}) * ${appt.sameStartIndex})`
+                  : `calc(${planIdx} * ${columnWidth} + 8px + ${stackIdx * STACK_OFFSET}px)`
+
+                const width = sameStart
+                  ? `calc((${columnWidth} - 8px) / ${appt.sameStartCount})`
+                  : `calc(${columnWidth} - 8px - ${stackIdx * STACK_OFFSET}px)`
 
                 return (
                   <div
                     key={planIdx * appts.length + idx}
                     className={cn(
-                      'absolute rounded-sm border shadow-lg hover:scale',
+                      'absolute rounded-sm border shadow-lg hover:z-10',
                       appt.color ?? 'bg-cyan-400/20',
                     )}
                     style={{
+                      pointerEvents: 'all',
                       top: top + '%',
                       height: height + '%',
-                      left: `calc(${planIdx} * ${columnWidth} + 8px + ${stackIdx * STACK_OFFSET}px)`,
-                      width: `calc(${columnWidth} - 8px - ${stackIdx * STACK_OFFSET}px)`,
+                      left,
+                      width,
                     }}
                   ></div>
                 )

@@ -79,6 +79,11 @@ export const Schedule = () => {
                     end: millisecondsInHour * 10,
                     color: 'bg-green-400',
                   },
+                  {
+                    start: millisecondsInHour * 2.85,
+                    end: millisecondsInHour * 6,
+                    color: 'bg-green-400',
+                  },
                 ],
               },
               {
