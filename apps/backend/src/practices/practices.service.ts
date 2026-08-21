@@ -57,7 +57,6 @@ export class PracticesService {
         'user.id',
         'user.firstName',
         'user.lastName',
-        'user.email',
         'user.createdAt',
         'user.active',
         'user.phone',
@@ -72,14 +71,13 @@ export class PracticesService {
     if (search) {
       qb.andWhere(
         `(user.firstName ILIKE :search
-        OR user.lastName ILIKE :search
-        OR user.email ILIKE :search)`,
+        OR user.lastName ILIKE :search)`,
         { search: `%${search}%` },
       )
     }
 
     return paginate(qb, query, {
-      sortable: ['firstName', 'lastName', 'email', 'createdAt', 'role'],
+      sortable: ['firstName', 'lastName', 'createdAt', 'role'],
     })
   }
 

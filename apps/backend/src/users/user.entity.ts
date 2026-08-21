@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
@@ -15,7 +16,10 @@ export class UserEntity {
   constructor(partial: Partial<UserEntity> = {}) {
     Object.assign(this, partial)
   }
-  @PrimaryGeneratedColumn('uuid')
+  // @PrimaryGeneratedColumn('uuid')
+  // id!: string
+
+  @PrimaryColumn()
   id!: string
 
   @Column()
@@ -27,11 +31,8 @@ export class UserEntity {
   @Column({ unique: true })
   email: string = ''
 
-  @Column()
-  phone: string = ''
-
-  @Column({ select: false })
-  password!: string
+  @Column({ nullable: true })
+  phone!: string
 
   @Column({ nullable: true })
   image?: string
@@ -39,7 +40,7 @@ export class UserEntity {
   @CreateDateColumn()
   createdAt: Date = new Date()
 
-  @Column()
+  @Column({ default: true })
   active: boolean = true
 
   @Column({

@@ -1,3 +1,4 @@
+import { auth } from './auth.js'
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller.js'
 import { AppService } from './app.service.js'
@@ -8,6 +9,10 @@ import { AddressesModule } from './addresses/addresses.module.js'
 import { ClinicsModule } from './clinics/clinics.module.js'
 import { DatabaseModule } from './database/database.module.js'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { AuthModule } from '@thallesp/nestjs-better-auth'
+import { InvitationsModule } from './invitations/invitations.module.js'
+
+const environment = process.env['NODE_ENV']
 
 @Module({
   imports: [
@@ -29,13 +34,35 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
         synchronize: false,
       }),
     }),
+
+    // ...(environment === 'development'
+    //   ? []
+    //   : [
+    //       AuthModule.forRoot({
+    //         auth,
+    //       }),
+    //     ]),
+    AuthModule.forRoot({ auth }),
+    // ...(environment === 'development' ? [DatabaseModule] : []),
     DatabaseModule,
     UsersModule,
     PracticesModule,
     AddressesModule,
     ClinicsModule,
+    InvitationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+// implements NestModule
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(bodyParser.json(), bodyParser.urlencoded({ extended: true }))
+  //     .exclude(
+  //       { path: 'api/auth/(.*)', method: RequestMethod.ALL },
+  //       { path: 'api/auth', method: RequestMethod.ALL },
+  //     )
+  //     .forRoutes('*')
+  // }
+}

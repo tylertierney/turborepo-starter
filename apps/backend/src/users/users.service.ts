@@ -32,14 +32,13 @@ export class UsersService {
     if (search) {
       qb.andWhere(
         `(user.firstName ILIKE :search
-        OR user.lastName ILIKE :search
-        OR user.email ILIKE :search)`,
+        OR user.lastName ILIKE :search)`,
         { search: `%${search}%` },
       )
     }
 
     return paginate(qb, query, {
-      sortable: ['firstName', 'lastName', 'email', 'createdAt'],
+      sortable: ['firstName', 'lastName', 'createdAt'],
     })
   }
 

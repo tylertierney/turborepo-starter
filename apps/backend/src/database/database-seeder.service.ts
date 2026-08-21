@@ -9,6 +9,8 @@ import {
 import { mockUserEntity, UserEntity } from '../users/user.entity.js'
 import { randNumber } from '@ngneat/falso'
 import { AddressEntity } from '../addresses/address.entity.js'
+import { auth } from '../auth.js'
+import { InvitationEntity } from '../invitations/invitation.entity.js'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
@@ -26,6 +28,9 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     @InjectRepository(ClinicEntity)
     private readonly clinicsRepository: Repository<ClinicEntity>,
 
+    @InjectRepository(InvitationEntity)
+    private readonly invitationsRepository: Repository<InvitationEntity>,
+
     @InjectRepository(AddressEntity)
     private readonly addressesRepository: Repository<AddressEntity>,
   ) {}
@@ -38,8 +43,64 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
   private resetAndSeedDatabase = async () => {
     await this.dataSource.synchronize(true)
+    await this.dataSource.query(`
+      TRUNCATE TABLE
+        "auth"."session",
+        "auth"."account",
+        "auth"."verification",
+        "auth"."user"
+      CASCADE
+    `)
 
-    const practices = Array(randNumber({ min: 40, max: 60 }))
+    // test practice + clinic + user
+    const testPractice = await this.practicesRepository.save({
+      active: true,
+      name: 'Tampa Eye',
+      image: 'https://tampaeye.com/wp-content/uploads/2024/06/logo-cropped.png',
+      url: 'https://tampaeye.com',
+    })
+
+    const testClinic = await this.clinicsRepository.save({
+      name: 'Carrolwood',
+      address: {
+        city: 'Tampa',
+        state: 'Florida',
+        street1: '123 Main St',
+        postalCode: '33604',
+      },
+      practice: testPractice,
+      image: mockClinicEntity().image,
+    })
+
+    // const testUser = await this.usersRepository.save({
+    //   firstName: 'Tyler',
+    //   lastName: 'Tierney',
+    //   active: true,
+    //   clinics: [testClinic],
+    //   practices: [testPractice],
+    //   email: 'tytierney@yahoo.com',
+    //   role: 'owner',
+    //   phone: '123 867 5309',
+    // })
+
+    // await auth.api.signUpEmail({
+    //   body: {
+    //     email: testUser.email,
+    //     name: testUser.firstName + ' ' + testUser.lastName,
+    //     password: 'password123',
+    //   },
+    // })
+
+    await this.invitationsRepository.save({
+      email: 'tytierney@yahoo.com',
+      firstName: 'Tyler',
+      lastName: 'Tierney',
+      practiceId: testPractice.id,
+      role: 'owner',
+    })
+    //
+
+    const practices = Array(randNumber({ min: 1, max: 1 }))
       .fill(null)
       .map(() => {
         const practice = mockPracticeEntity()
@@ -125,6 +186,16 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       fakeUsers = [...fakeUsers, ...owners, ...admins, ...providers, ...staff]
     }
 
-    await this.usersRepository.save(fakeUsers)
+    const users = await this.usersRepository.save(fakeUsers)
+
+    for (const user of users) {
+      await auth.api.signUpEmail({
+        body: {
+          name: user.firstName + ' ' + user.lastName,
+          email: user.email,
+          password: 'password123',
+        },
+      })
+    }
   }
 }

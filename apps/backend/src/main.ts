@@ -1,17 +1,28 @@
-import * as dotenv from 'dotenv'
-dotenv.config({ quiet: true })
-
+import 'dotenv/config'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module.js'
 import { RequestMethod } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+const environment = process.env['NODE_ENV']
 
-  // app.enableCors({
-  //   origin: '*',
-  // })
+const trustedOrigins =
+  process.env['BETTER_AUTH_TRUSTED_ORIGINS']?.split(',')?.map(str => {
+    const trimmed = str?.trim()
+    return 'http://' + trimmed
+  }) ?? []
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  })
+
+  app.enableCors({
+    origin: trustedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+  })
 
   app.setGlobalPrefix('api', {
     exclude: [
@@ -22,14 +33,16 @@ async function bootstrap() {
     ],
   })
 
-  const config = new DocumentBuilder()
-    .setTitle('Backend API')
-    .setDescription('The backend API description')
-    .setVersion('0.0.1')
-    .build()
+  if (environment !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Optometry API')
+      .setDescription('API for interfacting with the Optometry app.')
+      .setVersion('0.0.1')
+      .build()
 
-  const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api/docs', app, document)
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup('api/docs', app, document)
+  }
 
   const PORT = process.env.PORT ?? 8080
   await app.listen(PORT, () => {

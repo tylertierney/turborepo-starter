@@ -5,6 +5,7 @@ import { UserEntity } from '../users/user.entity.js'
 import { PracticeEntity } from '../practices/practice.entity.js'
 import { ClinicEntity } from '../clinics/clinic.entity.js'
 import { AddressEntity } from '../addresses/address.entity.js'
+import { InvitationEntity } from '../invitations/invitation.entity.js'
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AddressEntity } from '../addresses/address.entity.js'
       PracticeEntity,
       ClinicEntity,
       AddressEntity,
+      InvitationEntity,
     ]),
   ],
   providers: [DatabaseSeederService],

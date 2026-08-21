@@ -3,6 +3,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Query,
   ValidationPipe,
 } from '@nestjs/common'
@@ -11,6 +12,7 @@ import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { mockUserEntity, UserEntity } from './user.entity.js'
 import { PaginatedResult, type UserRole, userRoles } from '@repo/models'
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 
 export type PaginationQuery = {
   page: number
@@ -33,7 +35,7 @@ export class UsersController {
             firstName: u.firstName,
             lastName: u.lastName,
             createdAt: u.createdAt,
-            email: u.email,
+            // email: u.email,
             active: u.active,
           }
         }),
@@ -45,10 +47,7 @@ export class UsersController {
         itemCount: 10,
       },
     } satisfies PaginatedResult<
-      Pick<
-        UserEntity,
-        'id' | 'firstName' | 'lastName' | 'createdAt' | 'email' | 'active'
-      >
+      Pick<UserEntity, 'id' | 'firstName' | 'lastName' | 'createdAt' | 'active'>
     >,
   })
   @Get()
