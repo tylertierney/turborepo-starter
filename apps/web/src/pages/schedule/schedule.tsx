@@ -19,17 +19,20 @@ export const Schedule = () => {
   return (
     <Tabs className="w-full h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] @container">
       <div className="flex items-center h-14 px-4 gap-4 overflow-x-auto">
-        <Button
-          size="lg"
-          variant={isSameDay(today, selectedDate) ? 'outline' : 'default'}
-          onClick={() => setSelectedDate(today)}
-        >
-          Today
-        </Button>
-        <DatePicker
-          date={selectedDate}
-          setDate={(d) => setSelectedDate(d as Date)}
-        />
+        <div className="flex gap-1">
+          <Button
+            size="default"
+            disabled={isSameDay(today, selectedDate)}
+
+            onClick={() => setSelectedDate(today)}
+          >
+            Today
+          </Button>
+          <DatePicker
+            date={selectedDate}
+            setDate={(d) => setSelectedDate(d as Date)}
+          />
+        </div>
 
         <TabsList variant="default">
           <TabsTrigger value="day">Day</TabsTrigger>
@@ -50,6 +53,26 @@ export const Schedule = () => {
                     start: millisecondsInHour * 1,
                     end: millisecondsInHour * 2.5,
                     color: 'bg-green-500/50',
+                  },
+                ],
+              },
+              {
+                title: 'Karen',
+                appointments: [
+                  {
+                    start: millisecondsInHour * 4.5,
+                    end: millisecondsInHour * 8.5,
+                    color: 'bg-purple-500/50',
+                  },
+                  {
+                    start: millisecondsInHour * 10,
+                    end: millisecondsInHour * 10.5,
+                    color: 'bg-purple-500/50',
+                  },
+                  {
+                    start: millisecondsInHour * 13,
+                    end: millisecondsInHour * 15.5,
+                    color: 'bg-purple-500/50',
                   },
                 ],
               },

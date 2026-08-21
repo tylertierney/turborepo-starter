@@ -5,7 +5,6 @@ import {
   Entity,
   ManyToMany,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
 import { mockUser, type UserRole } from '@repo/models'
@@ -16,8 +15,6 @@ export class UserEntity {
   constructor(partial: Partial<UserEntity> = {}) {
     Object.assign(this, partial)
   }
-  // @PrimaryGeneratedColumn('uuid')
-  // id!: string
 
   @PrimaryColumn()
   id!: string

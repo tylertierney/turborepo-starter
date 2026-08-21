@@ -1,11 +1,6 @@
 import { ComponentProps, useState } from 'react'
 import { cn } from '../../lib/utils'
-import {
-  addMinutes,
-  differenceInMilliseconds,
-  format,
-  startOfDay,
-} from 'date-fns'
+import { addMinutes, format, startOfDay } from 'date-fns'
 import { Clock } from 'lucide-react'
 import {
   Select,
@@ -43,15 +38,15 @@ export const DayPlanner = ({
   const [selectedInterval, setSelectedInterval] = useState<Interval>(interval)
   const intervals = minutesInADay / selectedInterval
 
-  const columnWidth = `max(${100 / plans.length + '%'}, 240px)`
+  const columnWidth = `max(${100 / plans.length + '%'}, 200px)`
 
   return (
     <div
-      className={cn(`flex flex-col grow`, className)}
+      className={cn(`flex flex-col grow overflow-auto`, className)}
       style={{ maxHeight: 'inherit' }}
     >
-      <div className="flex h-10 shrink-0">
-        <div className="h-full p-1 flex items-center justify-end w-18 text-[11px] text-muted-foreground/70">
+      <div className="flex h-10 shrink-0 sticky top-0 bg-background z-20">
+        <div className="h-full p-1 flex items-center justify-end w-18 text-[11px] text-muted-foreground/70 border-b sticky left-0 bg-background">
           <Select
             value={selectedInterval}
             onValueChange={(i) => setSelectedInterval(i ?? 30)}
@@ -75,7 +70,7 @@ export const DayPlanner = ({
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className="flex justify-center shrink-0"
+              className="flex items-end pb-1 justify-center shrink-0 border-b h-full bg-background"
               style={{
                 width: columnWidth,
               }}
@@ -86,17 +81,14 @@ export const DayPlanner = ({
         </div>
       </div>
 
-      <div
-        className={`relative border-t flex flex-col grow overflow-y-auto`}
-        {...rest}
-      >
+      <div className={`relative flex flex-col grow`} {...rest}>
         <div className="relative w-full">
           {Array(intervals)
             .fill(null)
             .map((_, idx) => {
               return (
-                <div className="flex h-10 grow border-b shrink-0">
-                  <div className="h-full p-1 border-r w-18 text-[11px] text-muted-foreground/70">
+                <div className="flex h-10 grow ">
+                  <div className="h-full p-1 border-r w-18 sticky left-0 text-[11px] text-muted-foreground/70 bg-background z-10">
                     {format(
                       addMinutes(
                         startOfDay(new Date()),
@@ -109,13 +101,15 @@ export const DayPlanner = ({
                     {plans.map((plan, idx) => (
                       <div
                         key={idx}
-                        className="flex flex-col "
+                        className="flex flex-col grow shrink-0"
                         style={{
                           width: columnWidth,
                         }}
                       >
-                        <div className="flex h-[50%] border-dashed border-b"></div>
-                        <div className="flex h-[50%]"></div>
+                        <div className="flex h-[50%] border-dashed border-b">
+                          {/* hi */}
+                        </div>
+                        <div className="flex h-[50%] border-b"></div>
                       </div>
                     ))}
                   </div>
