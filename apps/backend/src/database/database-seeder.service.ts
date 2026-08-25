@@ -251,7 +251,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     const appts = finalSavedClinics
       .map(({ id: clinicId, practice, users }) =>
-        Array(200)
+        Array(300)
           .fill(null)
           .map(() => {
             const startTime = randFutureDate()

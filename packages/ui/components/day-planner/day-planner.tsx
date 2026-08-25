@@ -239,7 +239,10 @@ export const DayPlanner = ({
             }}
           >
             {plans.map((plan, planIdx) => {
-              const appts = addStackIdxToAppts(plan.appointments)
+              const appts = addStackIdxToAppts(
+                plan.appointments,
+                selectedInterval * 60 * 1000,
+              )
 
               return appts.map((appt, idx) => {
                 const top = (appt.startsAt / millisecondsInDay) * 100

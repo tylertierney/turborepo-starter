@@ -106,15 +106,22 @@ export const Schedule = () => {
 
   const plans: Plan[] = apptsByDay.map(({ date, appointments }) => {
     return {
-      title: format(date, 'EEEE'),
+      title: (
+        <span>
+          <b className="mr-2">{format(date, 'EEEE')}</b>{' '}
+          <span className="text-muted-foreground text-xs">
+            {format(date, 'MMM d')}
+          </span>
+        </span>
+      ),
       appointments: appointments.map((a) => {
         const bg =
           theme === 'light'
-            ? `bg-${a.type.color}-300`
+            ? `bg-${a.type.color}-100`
             : `bg-${a.type.color}-900`
         const header =
           theme === 'light'
-            ? `bg-${a.type.color}-800`
+            ? `bg-${a.type.color}-700`
             : `bg-${a.type.color}-400`
         const borderColor = `border-${a.type.color}-700`
 
@@ -149,8 +156,7 @@ export const Schedule = () => {
                 setSelectedDate(from ? from : new Date(Date.now()))
               }
             >
-              Week of{' '}
-              {format(selectedDate || new Date(Date.now()), 'eee. MMM d')}
+              W/o {format(selectedDate || new Date(Date.now()), 'MMM d yyyy')}
               <ChevronDown />
             </WeekPicker>
           )}
