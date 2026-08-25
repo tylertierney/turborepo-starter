@@ -68,8 +68,6 @@ export const UserPseudoTable = ({
   onRefresh?: () => void
   error?: boolean
 } & ComponentProps<'div'>) => {
-  // const [roleFilter, setRoleFilter] = useState<UserRole | null>(null)
-
   return (
     <PseudoTable<User>
       params={params}
@@ -185,6 +183,7 @@ export const UserPseudoTable = ({
             if (!val) {
               setParams((prev) => ({
                 ...prev,
+                currentPage: 1,
                 filter: Object.fromEntries(
                   Object.entries(prev.filter ?? {}).filter(
                     ([f]) => f !== 'role',
@@ -196,7 +195,11 @@ export const UserPseudoTable = ({
 
             setParams((prev) => ({
               ...prev,
-              filter: { ...prev.filter, role: val },
+              currentPage: 1,
+              filter: {
+                ...prev.filter,
+                role: val,
+              },
             }))
           }}
         >

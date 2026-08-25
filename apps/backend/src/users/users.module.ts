@@ -9,6 +9,6 @@ import { PracticeEntity } from '../practices/practice.entity.js'
   imports: [TypeOrmModule.forFeature([UserEntity, PracticeEntity])],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [],
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -77,7 +77,8 @@ export class InvitationsService {
       lastName: dto.lastName,
       email: invitation.email,
       role: invitation.role,
-      practices: [invitation.practice],
+      practiceId: invitation.practiceId,
+      practice: invitation.practice,
     })
 
     if (!user) {

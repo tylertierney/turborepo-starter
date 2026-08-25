@@ -6,6 +6,8 @@ import { PracticeEntity } from '../practices/practice.entity.js'
 import { ClinicEntity } from '../clinics/clinic.entity.js'
 import { AddressEntity } from '../addresses/address.entity.js'
 import { InvitationEntity } from '../invitations/invitation.entity.js'
+import { AppointmentTypeEntity } from '../appointments/appointment-type/appointment-type.entity.js'
+import { AppointmentEntity } from '../appointments/appointment.entity.js'
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { InvitationEntity } from '../invitations/invitation.entity.js'
       ClinicEntity,
       AddressEntity,
       InvitationEntity,
+      AppointmentTypeEntity,
+      AppointmentEntity,
     ]),
   ],
   providers: [DatabaseSeederService],

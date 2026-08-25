@@ -7,10 +7,22 @@ import {
   PracticeEntity,
 } from '../practices/practice.entity.js'
 import { mockUserEntity, UserEntity } from '../users/user.entity.js'
-import { randNumber } from '@ngneat/falso'
+import {
+  randFutureDate,
+  randNumber,
+  randParagraph,
+  randSentence,
+} from '@ngneat/falso'
 import { AddressEntity } from '../addresses/address.entity.js'
 import { auth } from '../auth.js'
 import { InvitationEntity } from '../invitations/invitation.entity.js'
+import { hoursToMilliseconds } from 'date-fns'
+import { AppointmentEntity } from '../appointments/appointment.entity.js'
+import { appointmentTypes, mockAppointmentType } from '@repo/models'
+import {
+  AppointmentTypeEntity,
+  mockAppointmentTypeEntity,
+} from '../appointments/appointment-type/appointment-type.entity.js'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
@@ -33,6 +45,12 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     @InjectRepository(AddressEntity)
     private readonly addressesRepository: Repository<AddressEntity>,
+
+    @InjectRepository(AppointmentTypeEntity)
+    private readonly appointmentTypeRepository: Repository<AppointmentTypeEntity>,
+
+    @InjectRepository(AppointmentEntity)
+    private readonly appointmentsRepository: Repository<AppointmentEntity>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -72,32 +90,35 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       image: mockClinicEntity().image,
     })
 
-    // const testUser = await this.usersRepository.save({
+    const authTestUser = await auth.api.signUpEmail({
+      body: {
+        email: 'johndoe@email.com',
+        name: 'John Doe',
+        password: 'password',
+      },
+    })
+
+    const testUser = await this.usersRepository.save({
+      id: authTestUser.user.id,
+      firstName: 'John',
+      lastName: 'Doe',
+      active: true,
+      clinics: [testClinic],
+      practice: testPractice,
+      email: 'johndoe@email.com',
+      role: 'owner',
+      phone: '123 867 5309',
+      practiceId: testPractice.id,
+    })
+
+    // await this.invitationsRepository.save({
+    //   email: 'tytierney@yahoo.com',
     //   firstName: 'Tyler',
     //   lastName: 'Tierney',
-    //   active: true,
-    //   clinics: [testClinic],
-    //   practices: [testPractice],
-    //   email: 'tytierney@yahoo.com',
+    //   practiceId: testPractice.id,
     //   role: 'owner',
-    //   phone: '123 867 5309',
     // })
 
-    // await auth.api.signUpEmail({
-    //   body: {
-    //     email: testUser.email,
-    //     name: testUser.firstName + ' ' + testUser.lastName,
-    //     password: 'password123',
-    //   },
-    // })
-
-    await this.invitationsRepository.save({
-      email: 'tytierney@yahoo.com',
-      firstName: 'Tyler',
-      lastName: 'Tierney',
-      practiceId: testPractice.id,
-      role: 'owner',
-    })
     //
 
     const practices = Array(randNumber({ min: 1, max: 1 }))
@@ -110,6 +131,14 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       })
 
     const savedPractices = await this.practicesRepository.save(practices)
+
+    await this.invitationsRepository.save({
+      email: 'tytierney@yahoo.com',
+      firstName: 'Tyler',
+      lastName: 'Tierney',
+      practiceId: savedPractices[0].id,
+      role: 'owner',
+    })
 
     const clinics = savedPractices
       .map(p => {
@@ -141,7 +170,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           return mockUserEntity({
             role: 'owner',
             clinics,
-            practices: [clinics[0].practice],
+            practice: clinics[0].practice,
           })
         })
 
@@ -151,7 +180,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           return mockUserEntity({
             role: 'admin',
             clinics,
-            practices: [clinics[0].practice],
+            practice: clinics[0].practice,
           })
         })
 
@@ -163,7 +192,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
               return mockUserEntity({
                 role: 'provider',
                 clinics: [c],
-                practices: [clinics[0].practice],
+                practice: clinics[0].practice,
               })
             }),
         )
@@ -177,7 +206,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
               return mockUserEntity({
                 role: 'staff',
                 clinics: [c],
-                practices: [clinics[0].practice],
+                practice: clinics[0].practice,
               })
             }),
         )
@@ -188,14 +217,69 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     const users = await this.usersRepository.save(fakeUsers)
 
-    for (const user of users) {
-      await auth.api.signUpEmail({
-        body: {
-          name: user.firstName + ' ' + user.lastName,
-          email: user.email,
-          password: 'password123',
-        },
+    // for (const user of users) {
+    //   await auth.api.signUpEmail({
+    //     body: {
+    //       name: user.firstName + ' ' + user.lastName,
+    //       email: user.email,
+    //       password: 'password',
+    //     },
+    //   })
+    // }
+
+    ////////////// Generate appointments
+
+    const apptTypes = savedPractices
+      .map(practice => {
+        return appointmentTypes.map(t => {
+          return mockAppointmentTypeEntity({
+            name: t,
+            practice,
+          })
+        })
       })
-    }
+      .flat()
+
+    const savedApptTypes = await this.appointmentTypeRepository.save(apptTypes)
+
+    const finalSavedClinics = await this.clinicsRepository.find({
+      relations: {
+        practice: true,
+        users: true,
+      },
+    })
+
+    const appts = finalSavedClinics
+      .map(({ id: clinicId, practice, users }) =>
+        Array(200)
+          .fill(null)
+          .map(() => {
+            const startTime = randFutureDate()
+            const endTime =
+              startTime.getTime() +
+              randNumber({
+                min: hoursToMilliseconds(1),
+                max: hoursToMilliseconds(4),
+              })
+
+            // return new Date(startTime, new Date(endTime))
+            return { startsAt: new Date(startTime), endsAt: new Date(endTime) }
+          })
+          .map(({ startsAt, endsAt }) => {
+            return new AppointmentEntity({
+              primaryProvider: users[~~(Math.random() * users.length)],
+              practiceId: practice.id,
+              clinicId,
+              startsAt,
+              endsAt,
+              name: randSentence(),
+              description: randParagraph(),
+              type: savedApptTypes[~~(Math.random() * savedApptTypes.length)],
+            })
+          }),
+      )
+      .flat()
+
+    await this.appointmentsRepository.save(appts)
   }
 }

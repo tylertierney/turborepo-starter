@@ -38,10 +38,20 @@ async function bootstrap() {
       .setTitle('Optometry API')
       .setDescription('API for interfacting with the Optometry app.')
       .setVersion('0.0.1')
+      .addCookieAuth('better-auth.session_token', {
+        type: 'apiKey',
+        in: 'cookie',
+        description: 'Better Auth Session Token Cookie',
+      })
       .build()
 
     const document = SwaggerModule.createDocument(app, config)
-    SwaggerModule.setup('api/docs', app, document)
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        withCredentials: true,
+      },
+    })
   }
 
   const PORT = process.env.PORT ?? 8080

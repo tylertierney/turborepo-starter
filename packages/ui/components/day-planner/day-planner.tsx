@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react'
+import { ComponentProps, ReactNode, useState } from 'react'
 import { cn } from '../../lib/utils'
 import { addMinutes, format, startOfDay } from 'date-fns'
 import { Clock } from 'lucide-react'
@@ -11,6 +11,17 @@ import {
   SelectTrigger,
 } from '../ui/select'
 import { millisecondsInDay } from 'date-fns/constants'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog'
+import { Button } from '../ui/button'
+import { Appointment } from '../../../models/dist/src/appointment'
 
 type ItemWithStackIdx<T extends object> = T & {
   stackIndex: number
@@ -18,11 +29,11 @@ type ItemWithStackIdx<T extends object> = T & {
   sameStartCount: number
 }
 
-const addStackIdxToAppts = <T extends { start: number; end: number }>(
+const addStackIdxToAppts = <T extends { startsAt: number; endsAt: number }>(
   items: T[] = [],
   dangerzone = 10 * 60 * 1000, // 10 minutes
 ): ItemWithStackIdx<T>[] => {
-  const sorted = items.toSorted((a, b) => a.start - b.start)
+  const sorted = items.toSorted((a, b) => a.startsAt - b.startsAt)
 
   if (!sorted.length) return []
 
@@ -35,7 +46,7 @@ const addStackIdxToAppts = <T extends { start: number; end: number }>(
     const curr = sorted[i]
     const prev = sorted[i - 1]
 
-    if (curr.start - prev.start <= dangerzone) {
+    if (curr.startsAt - prev.startsAt <= dangerzone) {
       currentGroup.push(curr)
     } else {
       groups.push(currentGroup)
@@ -60,7 +71,9 @@ const addStackIdxToAppts = <T extends { start: number; end: number }>(
       const prevItem = result.at(-1)
 
       const stackIndex =
-        prevItem && prevItem.end > curr.start ? prevItem.stackIndex + 1 : 0
+        prevItem && prevItem.endsAt > curr.startsAt
+          ? prevItem.stackIndex + 1
+          : 0
 
       result.push({
         ...curr,
@@ -80,15 +93,30 @@ const intervalOpts: Interval[] = [5, 10, 15, 30, 60]
 
 const minutesInADay = 60 * 24
 
-type Appointment = {
-  start: number
-  end: number
-  color?: string
+// type Appointment = {
+//   startsAt: number
+//   endsAt: number
+//   color?: string
+//   headerColor?: string
+//   borderColor?: string
+// }
+
+export type Plan = {
+  title: string | ReactNode
+  appointments: Array<
+    Appointment & {
+      startsAt: number
+      endsAt: number
+      color?: string
+      headerColor?: string
+      borderColor?: string
+    }
+  >
 }
 
 export type DayPlannerProps = {
   interval?: 5 | 10 | 15 | 30 | 60
-  plans: Array<{ title: string; appointments: Appointment[] }>
+  plans: Plan[]
 }
 
 export const DayPlanner = ({
@@ -104,16 +132,24 @@ export const DayPlanner = ({
 
   return (
     <div
-      className={cn(`flex flex-col grow overflow-auto`, className)}
+      className={cn(
+        `@container flex flex-col grow overflow-auto overscroll-none`,
+        className,
+      )}
       style={{ maxHeight: 'inherit' }}
     >
       <div className="flex h-10 shrink-0 sticky top-0 bg-background z-20">
-        <div className="h-full p-1 flex items-center justify-end w-18 text-[11px] text-muted-foreground/70 border-b sticky left-0 bg-background">
+        <div
+          className={cn(
+            'h-full p-1 flex items-center justify-end text-[11px] text-muted-foreground/70 border-b sticky left-0 bg-background',
+            selectedInterval === 60 ? 'w-14' : 'w-18',
+          )}
+        >
           <Select
             value={selectedInterval}
             onValueChange={(i) => setSelectedInterval(i ?? 30)}
           >
-            <SelectTrigger size="sm" className="h-4 w-12 px-1">
+            <SelectTrigger size="sm" className="h-4 w-14 px-1">
               <Clock />
             </SelectTrigger>
             <SelectContent>
@@ -137,7 +173,11 @@ export const DayPlanner = ({
                 width: columnWidth,
               }}
             >
-              <b>{plan.title}</b>
+              {typeof plan.title === 'string' ? (
+                <b>{plan.title}</b>
+              ) : (
+                plan.title
+              )}
             </div>
           ))}
         </div>
@@ -149,8 +189,13 @@ export const DayPlanner = ({
             .fill(null)
             .map((_, idx) => {
               return (
-                <div className="flex h-10 grow ">
-                  <div className="h-full p-1 border-r w-18 sticky left-0 text-[11px] text-muted-foreground/70 bg-background z-10">
+                <div key={idx} className="flex h-10 grow ">
+                  <div
+                    className={cn(
+                      'h-full p-1 border-r sticky left-0 text-[11px] text-muted-foreground/70 bg-background z-10',
+                      selectedInterval === 60 ? 'w-14' : 'w-18',
+                    )}
+                  >
                     {format(
                       addMinutes(
                         startOfDay(new Date()),
@@ -190,9 +235,15 @@ export const DayPlanner = ({
               const appts = addStackIdxToAppts(plan.appointments)
 
               return appts.map((appt, idx) => {
-                const top = (appt.start / millisecondsInDay) * 100
-                const duration = Math.abs(appt.end - appt.start)
-                const height = (duration / millisecondsInDay) * 100
+                const top = (appt.startsAt / millisecondsInDay) * 100
+                const duration = Math.abs(appt.endsAt - appt.startsAt)
+
+                const height =
+                  appt.startsAt + duration >= millisecondsInDay
+                    ? ((millisecondsInDay - appt.startsAt) /
+                        millisecondsInDay) *
+                      100
+                    : (duration / millisecondsInDay) * 100
                 const stackIdx = appt.stackIndex
 
                 const STACK_OFFSET = 16
@@ -208,20 +259,58 @@ export const DayPlanner = ({
                   : `calc(${columnWidth} - 8px - ${stackIdx * STACK_OFFSET}px)`
 
                 return (
-                  <div
-                    key={planIdx * appts.length + idx}
-                    className={cn(
-                      'absolute rounded-sm border shadow-lg hover:z-10',
-                      appt.color ?? 'bg-cyan-400/20',
-                    )}
-                    style={{
-                      pointerEvents: 'all',
-                      top: top + '%',
-                      height: height + '%',
-                      left,
-                      width,
-                    }}
-                  ></div>
+                  <Dialog key={'dialog' + planIdx * appts.length + idx}>
+                    <DialogTrigger
+                      nativeButton={false}
+                      render={
+                        <div
+                          className={cn(
+                            'absolute rounded-sm border shadow-lg hover:z-10 flex flex-col overflow-hidden text-xs',
+                            appt.color ? appt.color : 'bg-cyan-400',
+                            appt.borderColor ? appt.borderColor : '',
+                          )}
+                          style={{
+                            pointerEvents: 'all',
+                            top: top + '%',
+                            height: height + '%',
+                            left,
+                            width,
+                          }}
+                        >
+                          <div
+                            className={cn(
+                              'h-2 w-full shrink-0',
+                              appt.headerColor,
+                            )}
+                          ></div>
+                          <div className="flex flex-col p-2">
+                            {/* {Array(10)
+                              .fill(null)
+                              .map(() => (
+                                <p>{randParagraph()}</p>
+                              ))} */}
+                            <p>
+                              {appt.primaryProvider.firstName.slice(0, 1) +
+                                '.' +
+                                ' ' +
+                                appt.primaryProvider.lastName}
+                            </p>
+                          </div>
+                        </div>
+                      }
+                    />
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Appointment Details</DialogTitle>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose
+                          render={<Button variant="outline">Cancel</Button>}
+                        />
+                        <Button type="submit">Save changes</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 )
               })
             })}

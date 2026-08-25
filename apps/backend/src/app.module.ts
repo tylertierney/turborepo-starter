@@ -11,6 +11,10 @@ import { DatabaseModule } from './database/database.module.js'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from '@thallesp/nestjs-better-auth'
 import { InvitationsModule } from './invitations/invitations.module.js'
+import { RequestContextModule } from './context/request-context.module.js'
+import { APP_GUARD } from '@nestjs/core'
+import { RequestContextGuard } from './context/request-context.guard.js'
+import { AppointmentsModule } from './appointments/appointments.module.js'
 
 const environment = process.env['NODE_ENV']
 
@@ -44,15 +48,20 @@ const environment = process.env['NODE_ENV']
     //     ]),
     AuthModule.forRoot({ auth }),
     // ...(environment === 'development' ? [DatabaseModule] : []),
-    DatabaseModule,
     UsersModule,
+    RequestContextModule,
+    DatabaseModule,
     PracticesModule,
     AddressesModule,
     ClinicsModule,
     InvitationsModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: RequestContextGuard },
+  ],
 })
 // implements NestModule
 export class AppModule {

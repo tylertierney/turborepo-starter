@@ -3,14 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinTable,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { UserEntity } from '../users/user.entity.js'
 import { mockPractice } from '@repo/models'
-import { ClinicEntity } from '../clinics/clinic.entity.js'
-// import { ClinicEntity } from '../clinics/clinic.entity.js'
 
 @Entity({ name: 'practices' })
 export class PracticeEntity {
@@ -36,18 +33,7 @@ export class PracticeEntity {
   @Column()
   active: boolean = true
 
-  @ManyToMany(() => UserEntity, user => user.practices, { cascade: true })
-  @JoinTable({
-    name: 'users_practices',
-    joinColumn: {
-      name: 'practice_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-  })
+  @OneToMany(() => UserEntity, user => user.practice)
   users!: UserEntity[]
 
   // @OneToMany(() => ClinicEntity, clinic => clinic.practice)

@@ -3,7 +3,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToMany,
+  ManyToOne,
   PrimaryColumn,
 } from 'typeorm'
 import { PracticeEntity } from '../practices/practice.entity.js'
@@ -47,8 +49,14 @@ export class UserEntity {
   })
   role!: UserRole
 
-  @ManyToMany(() => PracticeEntity, practice => practice.users)
-  practices!: PracticeEntity[]
+  @Column()
+  practiceId!: string
+
+  @ManyToOne(() => PracticeEntity, practice => practice.users, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'practiceId' })
+  practice!: PracticeEntity
 
   @ManyToMany(() => ClinicEntity, clinic => clinic.users)
   clinics!: ClinicEntity[]

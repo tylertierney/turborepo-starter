@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { type PaginatedResult, type UserRole } from '@repo/models'
-import { paginate } from '../shared/pagination/pagination.util.js'
-import { PracticeEntity } from './practice.entity.js'
-import { UserEntity } from '../users/user.entity.js'
+import { Repository } from 'typeorm'
 import { ClinicEntity } from '../clinics/clinic.entity.js'
+import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
+import { paginate } from '../shared/pagination/pagination.util.js'
+import { UserEntity } from '../users/user.entity.js'
+import { PracticeEntity } from './practice.entity.js'
 
 @Injectable()
 export class PracticesService {
@@ -51,7 +51,7 @@ export class PracticesService {
 
     const qb = this.usersRepository
       .createQueryBuilder('user')
-      .innerJoin('user.practices', 'practice')
+      .innerJoin('user.practice', 'practice')
       .where('practice.id = :practiceId', { practiceId })
       .select([
         'user.id',

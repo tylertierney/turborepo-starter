@@ -5,7 +5,6 @@ import {
   Button,
   convertDatatableParamsToQueryString,
   DatatableParams,
-  DayPlanner,
   Empty,
   Tabs,
   TabsContent,
@@ -174,7 +173,6 @@ export const AdminPractice = () => {
                     className="flex flex-col rounded overflow-hidden grow w-full @lg:w-[48%] @lg:max-w-[48%] p-0 border shadow mb-8"
                   >
                     <img
-                      // width="100%"
                       height="4rem"
                       width="auto"
                       src={c.image}
@@ -213,9 +211,6 @@ export const AdminPractice = () => {
               onRefresh={refetchUsers}
             />
           </div>
-        </TabsContent>
-        <TabsContent value="schedule">
-          <DayPlanner className="border-blue-400" />
         </TabsContent>
       </Tabs>
     </div>

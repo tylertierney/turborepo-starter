@@ -90,8 +90,8 @@ export const SignUp = () => {
       firstName: invitation?.firstName,
       lastName: invitation?.lastName,
       email: invitation?.email,
-      password: '',
-      confirmPassword: '',
+      password: 'password',
+      confirmPassword: 'password',
     } satisfies FormValues,
   })
 

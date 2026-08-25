@@ -105,7 +105,8 @@ export const Login = () => {
                         <Input
                           id="email"
                           type="email"
-                          autoComplete="email"
+                          name="email"
+                          autoComplete="username"
                           required={true}
                           placeholder="johndoe@email.com"
                           onBlur={f.handleBlur}
@@ -143,6 +144,7 @@ export const Login = () => {
                           id="password"
                           placeholder=""
                           type="password"
+                          autoComplete="password"
                           onChange={(e) => f.handleChange(e.target.value)}
                           onBlur={f.handleBlur}
                           aria-invalid={isInvalid}

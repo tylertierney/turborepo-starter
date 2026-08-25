@@ -1,124 +1,286 @@
 import {
   Button,
+  Checkbox,
   DatePicker,
   DayPlanner,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
+  Label,
+  Plan,
+  WeekPicker,
+  WeekPlanner,
+  cn,
 } from '@repo/ui'
-import { isSameDay } from 'date-fns'
 import { millisecondsInHour } from 'date-fns/constants'
 import { useState } from 'react'
+import { Appointment, mockAppointmentColor } from '@repo/models'
+import { useTheme } from '../../context/ThemeProvider'
+import {
+  eachDayOfInterval,
+  endOfDay,
+  endOfWeek,
+  format,
+  isSameDay,
+  nextDay,
+  previousDay,
+  startOfDay,
+  startOfWeek,
+} from 'date-fns'
+import { ChevronDown } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../api'
+
+const color1 = mockAppointmentColor()
+const color2 = mockAppointmentColor()
+const color3 = mockAppointmentColor()
+
+type View = 'day' | 'week'
 
 export const Schedule = () => {
-  const today = new Date()
+  const today = new Date(Date.now())
+
+  const [showWeekend, setShowWeekend] = useState(false)
 
   const [selectedDate, setSelectedDate] = useState(today)
 
-  return (
-    <Tabs className="w-full h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] @container">
-      <div className="flex items-center h-14 px-4 gap-4 overflow-x-auto">
-        <div className="flex gap-1">
-          <Button
-            size="default"
-            disabled={isSameDay(today, selectedDate)}
+  const selectedDateRange: { from: Date; to: Date } = {
+    from: startOfWeek(selectedDate),
+    to: endOfWeek(selectedDate),
+  }
 
-            onClick={() => setSelectedDate(today)}
-          >
-            Today
-          </Button>
-          <DatePicker
-            date={selectedDate}
-            setDate={(d) => setSelectedDate(d as Date)}
-          />
+  const viewedDateRange: { from: Date; to: Date } = showWeekend
+    ? selectedDateRange
+    : {
+        from: nextDay(selectedDateRange.from, 1),
+        to: previousDay(selectedDateRange.to, 5),
+      }
+
+  const { theme } = useTheme()
+
+  const [view, setView] = useState<View>('day')
+
+  // const plans = [
+  //   {
+  //     title: 'Tyler',
+  //     appointments: [
+  //       {
+  //         start: millisecondsInHour * 1,
+  //         end: millisecondsInHour * 2.5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 1.5,
+  //         end: millisecondsInHour * 3,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 2.75,
+  //         end: millisecondsInHour * 3.5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 2.75,
+  //         end: millisecondsInHour * 3.5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 2.75,
+  //         end: millisecondsInHour * 5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 9,
+  //         end: millisecondsInHour * 10,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 2.85,
+  //         end: millisecondsInHour * 6,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: 'Karen',
+  //     appointments: [
+  //       {
+  //         start: millisecondsInHour * 3,
+  //         end: millisecondsInHour * 8.5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 10,
+  //         end: millisecondsInHour * 10.5,
+  //       },
+  //       {
+  //         start: millisecondsInHour * 13,
+  //         end: millisecondsInHour * 15.5,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: 'Bunni',
+  //     appointments: [
+  //       {
+  //         start: millisecondsInHour * 7.5,
+  //         end: millisecondsInHour * 8.5,
+  //       },
+  //     ],
+  //   },
+  // ].map((p, idx) => ({
+  //   ...p,
+  //   appointments: p.appointments.map((a) => {
+  //     const color = idx === 1 ? color1 : idx === 2 ? color2 : color3
+  //     const bg = theme === 'light' ? `bg-${color}-300` : `bg-${color}-900`
+  //     const header = theme === 'light' ? `bg-${color}-800` : `bg-${color}-400`
+  //     const borderColor = `border-${color}-700`
+
+  //     return { ...a, color: bg, headerColor: header, borderColor }
+  //   }),
+  // }))
+
+  const { data: appointments } = useQuery({
+    queryKey: [
+      `appointments`,
+      selectedDateRange.from.toISOString(),
+      selectedDateRange.to.toISOString(),
+    ],
+    queryFn: async () => {
+      const query = new URLSearchParams()
+
+      if (view === 'day') {
+        query.set('startsAt', startOfDay(selectedDate).toISOString())
+        query.set('endsAt', endOfDay(selectedDate).toISOString())
+      } else {
+        query.set('startsAt', viewedDateRange.from.toISOString())
+        query.set('endsAt', viewedDateRange.to.toISOString())
+      }
+
+      const { data } = await api.get<Appointment[]>(
+        `api/appointments?${query.toString()}`,
+      )
+      return (data || []).map((a) => ({
+        ...a,
+        startsAt: new Date(a.startsAt),
+        endsAt: new Date(a.endsAt),
+      }))
+    },
+  })
+
+  const datesArr =
+    view === 'day'
+      ? [selectedDate]
+      : eachDayOfInterval({
+          start: viewedDateRange.from,
+          end: viewedDateRange.to,
+        })
+
+  // const apptsByDay = Object.groupBy(items)
+
+  const apptsByDay = datesArr.map((d) => {
+    return {
+      date: d,
+      appointments: (appointments || []).filter(({ startsAt }) => {
+        return isSameDay(new Date(startsAt), d)
+      }),
+    }
+  })
+
+  // console.log()
+
+  const plans: Plan[] = apptsByDay.map(({ date, appointments }) => {
+    return {
+      title: format(date, 'EEEE'),
+      appointments: appointments.map((a) => {
+        const bg =
+          theme === 'light'
+            ? `bg-${a.type.color}-300`
+            : `bg-${a.type.color}-900`
+        const header =
+          theme === 'light'
+            ? `bg-${a.type.color}-800`
+            : `bg-${a.type.color}-400`
+        const borderColor = `border-${a.type.color}-700`
+
+        return {
+          ...a,
+          startsAt: a.startsAt.getTime() - startOfDay(a.startsAt).getTime(),
+          endsAt: a.endsAt.getTime() - startOfDay(a.startsAt).getTime(),
+          color: bg,
+          headerColor: header,
+          borderColor,
+          // color: `bg-green-600`,
+        }
+      }),
+    }
+  })
+
+  // console.log(plans)
+
+  return (
+    <>
+      <div className="flex items-center w-full h-14 px-4 gap-4 overflow-x-auto">
+        <div className="flex gap-1">
+          {view === 'day' ? (
+            <DatePicker
+              date={selectedDate}
+              setDate={(d) => setSelectedDate(d as Date)}
+            >
+              {format(selectedDate || new Date(Date.now()), 'eee. MMM d')}
+              <ChevronDown />
+            </DatePicker>
+          ) : (
+            <WeekPicker
+              date={viewedDateRange}
+              setDateRange={({ from }) =>
+                setSelectedDate(from ? from : new Date(Date.now()))
+              }
+            >
+              Week of{' '}
+              {format(selectedDate || new Date(Date.now()), 'eee. MMM d')}
+              <ChevronDown />
+            </WeekPicker>
+          )}
         </div>
 
-        <TabsList variant="default">
-          <TabsTrigger value="day">Day</TabsTrigger>
-          <TabsTrigger value="week">Week</TabsTrigger>
-        </TabsList>
+        <nav className="flex p-1 bg-muted rounded-lg gap-1">
+          {(['day', 'week'] as View[]).map((str) => (
+            <Button
+              key={str}
+              size="sm"
+              variant={view === str ? 'outline' : 'ghost'}
+              className={cn(
+                'p-1.5 font-bold',
+                view === str ? '' : 'text-muted-foreground border-transparent',
+              )}
+              onClick={() => setView(str)}
+            >
+              {str[0].toUpperCase() + str.slice(1)}
+            </Button>
+          ))}
+        </nav>
+        {view === 'week' && (
+          <div className="flex gap-2">
+            <Checkbox
+              checked={showWeekend}
+              onCheckedChange={setShowWeekend}
+              id="weekends-checkbox"
+              name="weekends-checkbox"
+            />
+            <Label className="mt-0.5" htmlFor="weekends-checkbox">
+              Weekends
+            </Label>
+          </div>
+        )}
       </div>
-      <div className="flex h-full overflow-y-hidden">
-        <TabsContent
-          className="flex flex-col max-h-[calc(100dvh-8rem)]"
-          value="day"
-        >
+      <div className="flex h-full w-full overflow-y-hidden">
+        <div className="flex flex-col w-full max-h-[calc(100dvh-8rem)]">
           <DayPlanner
-            plans={[
-              {
-                title: 'Tyler',
-                appointments: [
-                  {
-                    start: millisecondsInHour * 1,
-                    end: millisecondsInHour * 2.5,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 1.5,
-                    end: millisecondsInHour * 3,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 2.75,
-                    end: millisecondsInHour * 3.5,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 2.75,
-                    end: millisecondsInHour * 3.5,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 2.75,
-                    end: millisecondsInHour * 5,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 9,
-                    end: millisecondsInHour * 10,
-                    color: 'bg-green-400',
-                  },
-                  {
-                    start: millisecondsInHour * 2.85,
-                    end: millisecondsInHour * 6,
-                    color: 'bg-green-400',
-                  },
-                ],
-              },
-              {
-                title: 'Karen',
-                appointments: [
-                  {
-                    start: millisecondsInHour * 3,
-                    end: millisecondsInHour * 8.5,
-                    color: 'bg-purple-500/50',
-                  },
-                  {
-                    start: millisecondsInHour * 10,
-                    end: millisecondsInHour * 10.5,
-                    color: 'bg-purple-500/50',
-                  },
-                  {
-                    start: millisecondsInHour * 13,
-                    end: millisecondsInHour * 15.5,
-                    color: 'bg-purple-500/50',
-                  },
-                ],
-              },
-              {
-                title: 'Bunni',
-                appointments: [
-                  {
-                    start: millisecondsInHour * 7.5,
-                    end: millisecondsInHour * 8.5,
-                  },
-                ],
-              },
-            ]}
+            className={cn(view !== 'day' && 'hidden')}
+            plans={plans}
           />
-        </TabsContent>
+          <WeekPlanner
+            dateRange={viewedDateRange}
+            className={cn(view !== 'week' && 'hidden')}
+            setDateRange={(range) => {
+              setSelectedDate(
+                nextDay(startOfWeek(range.from || new Date(Date.now())), 1),
+              )
+            }}
+            plans={plans}
+          />
+        </div>
       </div>
-    </Tabs>
+    </>
   )
 }

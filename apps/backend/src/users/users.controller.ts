@@ -3,7 +3,6 @@ import {
   Get,
   NotFoundException,
   Param,
-  ParseUUIDPipe,
   Query,
   ValidationPipe,
 } from '@nestjs/common'
@@ -12,7 +11,6 @@ import { ApiOkResponse, ApiQuery } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../shared/pagination/pagination-query.dto.js'
 import { mockUserEntity, UserEntity } from './user.entity.js'
 import { PaginatedResult, type UserRole, userRoles } from '@repo/models'
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 
 export type PaginationQuery = {
   page: number

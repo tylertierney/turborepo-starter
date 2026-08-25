@@ -160,6 +160,9 @@ body {
   }
 }
 
+@source inline("{hover:,}bg-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone,taupe,mauve,mist,olive}-{100..900}");
+@source inline("{hover:,}border-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone,taupe,mauve,mist,olive}-{100..900}");
+
 @utility table-layout-fixed {
   table-layout: fixed;
 }
