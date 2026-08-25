@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useState } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 import { cn } from '../../lib/utils'
 import { addMinutes, format, startOfDay } from 'date-fns'
 import { Clock } from 'lucide-react'
@@ -22,6 +22,7 @@ import {
 } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Appointment } from '../../../models/dist/src/appointment'
+import { useStateWithLocalStorage } from '../../hooks/use-state-with-local-storage'
 
 type ItemWithStackIdx<T extends object> = T & {
   stackIndex: number
@@ -93,19 +94,18 @@ const intervalOpts: Interval[] = [5, 10, 15, 30, 60]
 
 const minutesInADay = 60 * 24
 
-// type Appointment = {
-//   startsAt: number
-//   endsAt: number
-//   color?: string
-//   headerColor?: string
-//   borderColor?: string
-// }
-
 export type Plan = {
+  currentDay?: boolean
   title: string | ReactNode
   appointments: Array<
     Appointment & {
+      /**
+       * Milliseconds from start of day
+       */
       startsAt: number
+      /**
+       * Milliseconds from start of day
+       */
       endsAt: number
       color?: string
       headerColor?: string
@@ -117,15 +117,18 @@ export type Plan = {
 export type DayPlannerProps = {
   interval?: 5 | 10 | 15 | 30 | 60
   plans: Plan[]
+  appointmentContent?: (appt: Appointment) => ReactNode
 }
 
 export const DayPlanner = ({
   interval = 30,
   plans = [],
   className,
+  appointmentContent,
   ...rest
 }: DayPlannerProps & ComponentProps<'div'>) => {
-  const [selectedInterval, setSelectedInterval] = useState<Interval>(interval)
+  const [selectedInterval, setSelectedInterval] =
+    useStateWithLocalStorage<Interval>('day-planner-interval', interval)
   const intervals = minutesInADay / selectedInterval
 
   const columnWidth = `max(${100 / plans.length + '%'}, 200px)`
@@ -136,7 +139,10 @@ export const DayPlanner = ({
         `@container flex flex-col grow overflow-auto overscroll-none`,
         className,
       )}
-      style={{ maxHeight: 'inherit' }}
+      style={{
+        maxHeight: 'inherit',
+        // scrollSnapType: 'x proximity'
+      }}
     >
       <div
         className="flex h-10 shrink-0 sticky top-0 bg-background z-20"
@@ -171,9 +177,14 @@ export const DayPlanner = ({
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className="flex items-end pb-1 justify-center shrink-0 border-b h-full bg-background"
+              className={cn(
+                'flex items-end pb-1 justify-center shrink-0 border-b h-full bg-background',
+                plan.currentDay && 'border-b-blue-400 border-b-2',
+              )}
               style={{
                 width: columnWidth,
+                scrollSnapAlign: 'center',
+                // scrollInitialTarget: 'nearest',
               }}
             >
               {typeof plan.title === 'string' ? (
@@ -196,7 +207,7 @@ export const DayPlanner = ({
             .fill(null)
             .map((_, idx) => {
               return (
-                <div key={idx} className="flex h-10 grow ">
+                <div key={idx} className="flex h-10">
                   <div
                     className={cn(
                       'h-full p-1 border-r sticky left-0 text-[11px] text-muted-foreground/70 bg-background z-10',
@@ -215,7 +226,7 @@ export const DayPlanner = ({
                     {plans.map((plan, idx) => (
                       <div
                         key={idx}
-                        className="flex flex-col grow shrink-0"
+                        className="flex flex-col grow shrink-0 border-r border-r-muted"
                         style={{
                           width: columnWidth,
                         }}
@@ -232,7 +243,10 @@ export const DayPlanner = ({
               )
             })}
           <div
-            className="absolute top-0 left-18 w-[calc(100%-72px)]"
+            className={cn(
+              'absolute top-0 w-[calc(100%-72px)]',
+              selectedInterval === 60 ? 'left-14' : 'left-18',
+            )}
             style={{
               height: '100%',
               pointerEvents: 'none',
@@ -266,7 +280,7 @@ export const DayPlanner = ({
 
                 const width = sameStart
                   ? `calc((${columnWidth} - 8px) / ${appt.sameStartCount})`
-                  : `calc(${columnWidth} - 8px - ${stackIdx * STACK_OFFSET}px)`
+                  : `calc(${columnWidth} - 16px - ${stackIdx * STACK_OFFSET}px)`
 
                 return (
                   <Dialog key={'dialog' + planIdx * appts.length + idx}>
@@ -293,18 +307,31 @@ export const DayPlanner = ({
                               appt.headerColor,
                             )}
                           ></div>
-                          <div className="flex flex-col p-2">
-                            {/* {Array(10)
-                              .fill(null)
-                              .map(() => (
-                                <p>{randParagraph()}</p>
-                              ))} */}
-                            <p>
+
+                          <span
+                            className={cn(
+                              'text-background text-[10px] relative font-bold text-nowrap rounded-br self-start pl-1 pr-2',
+                              appt.headerColor,
+                            )}
+                            style={{ top: '-6px' }}
+                          >
+                            {format(
+                              new Date(
+                                startOfDay(new Date()).getTime() +
+                                  appt.startsAt,
+                              ),
+                              'h:mm a',
+                            )}
+                          </span>
+
+                          <div className="flex flex-col px-1">
+                            {/* <p>
                               {appt.primaryProvider.firstName.slice(0, 1) +
                                 '.' +
                                 ' ' +
                                 appt.primaryProvider.lastName}
-                            </p>
+                            </p> */}
+                            {appointmentContent?.(appt)}
                           </div>
                         </div>
                       }

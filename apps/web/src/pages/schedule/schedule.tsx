@@ -4,14 +4,15 @@ import {
   DatePicker,
   DayPlanner,
   Label,
+  PingingDot,
   Plan,
   WeekPicker,
   WeekPlanner,
   cn,
+  useStateWithLocalStorage,
 } from '@repo/ui'
-import { millisecondsInHour } from 'date-fns/constants'
 import { useState } from 'react'
-import { Appointment, mockAppointmentColor } from '@repo/models'
+import { Appointment } from '@repo/models'
 import { useTheme } from '../../context/ThemeProvider'
 import {
   eachDayOfInterval,
@@ -27,19 +28,19 @@ import {
 import { ChevronDown } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api'
-
-const color1 = mockAppointmentColor()
-const color2 = mockAppointmentColor()
-const color3 = mockAppointmentColor()
+import { AppointmentContent } from './appointment-content'
 
 type View = 'day' | 'week'
 
 export const Schedule = () => {
   const today = new Date(Date.now())
 
-  const [showWeekend, setShowWeekend] = useState(false)
-
+  const [showWeekend, setShowWeekend] = useStateWithLocalStorage(
+    'calendar-show-weekend',
+    false,
+  )
   const [selectedDate, setSelectedDate] = useState(today)
+  const [view, setView] = useStateWithLocalStorage<View>('calendar-view', 'day')
 
   const selectedDateRange: { from: Date; to: Date } = {
     from: startOfWeek(selectedDate),
@@ -54,8 +55,6 @@ export const Schedule = () => {
       }
 
   const { theme } = useTheme()
-
-  const [view, setView] = useState<View>('week')
 
   const { data: appointments } = useQuery({
     queryKey: [
@@ -105,15 +104,18 @@ export const Schedule = () => {
   })
 
   const plans: Plan[] = apptsByDay.map(({ date, appointments }) => {
+    const currentDay = isSameDay(date, new Date(Date.now()))
     return {
       title: (
-        <span>
-          <b className="mr-2">{format(date, 'EEEE')}</b>{' '}
-          <span className="text-muted-foreground text-xs">
+        <div className="flex items-center gap-2">
+          {currentDay && <PingingDot className="text-blue-400 self-center" />}
+          <b>{format(date, 'EEEE')}</b>{' '}
+          <span className="text-muted-foreground text-xs text-nowrap mt-0.5">
             {format(date, 'MMM d')}
           </span>
-        </span>
+        </div>
       ),
+      currentDay,
       appointments: appointments.map((a) => {
         const bg =
           theme === 'light'
@@ -197,6 +199,7 @@ export const Schedule = () => {
           <DayPlanner
             className={cn(view !== 'day' && 'hidden')}
             plans={plans}
+            appointmentContent={AppointmentContent}
           />
           <WeekPlanner
             dateRange={viewedDateRange}
@@ -207,6 +210,7 @@ export const Schedule = () => {
               )
             }}
             plans={plans}
+            appointmentContent={AppointmentContent}
           />
         </div>
       </div>

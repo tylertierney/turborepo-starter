@@ -6,26 +6,28 @@ import {
   subDays,
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 import { DateRange } from 'react-day-picker'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { DayPlanner, Plan } from '../day-planner/day-planner'
+import { Appointment } from '@repo/models'
 
 export type WeekPlannerProps = {
   dateRange: NonNullable<DateRange>
   setDateRange: (dateRange: NonNullable<DateRange>) => void
   plans: Plan[]
+  appointmentContent?: (appt: Appointment) => ReactNode
 }
 
 export const WeekPlanner = ({
   dateRange,
   setDateRange,
   plans,
+  appointmentContent,
   className = '',
   ...rest
 }: WeekPlannerProps & ComponentProps<'div'>) => {
-  console.log(plans)
   return (
     <div
       className={cn(
@@ -36,7 +38,7 @@ export const WeekPlanner = ({
       {...rest}
     >
       <div className="flex justify-center items-center gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 my-2">
           <Button
             variant="outline"
             size="icon-sm"
@@ -71,7 +73,7 @@ export const WeekPlanner = ({
           </Button>
         </div>
       </div>
-      <DayPlanner plans={plans} />
+      <DayPlanner plans={plans} appointmentContent={appointmentContent} />
     </div>
   )
 }
