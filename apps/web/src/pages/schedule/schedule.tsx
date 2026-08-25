@@ -55,79 +55,7 @@ export const Schedule = () => {
 
   const { theme } = useTheme()
 
-  const [view, setView] = useState<View>('day')
-
-  // const plans = [
-  //   {
-  //     title: 'Tyler',
-  //     appointments: [
-  //       {
-  //         start: millisecondsInHour * 1,
-  //         end: millisecondsInHour * 2.5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 1.5,
-  //         end: millisecondsInHour * 3,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 2.75,
-  //         end: millisecondsInHour * 3.5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 2.75,
-  //         end: millisecondsInHour * 3.5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 2.75,
-  //         end: millisecondsInHour * 5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 9,
-  //         end: millisecondsInHour * 10,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 2.85,
-  //         end: millisecondsInHour * 6,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: 'Karen',
-  //     appointments: [
-  //       {
-  //         start: millisecondsInHour * 3,
-  //         end: millisecondsInHour * 8.5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 10,
-  //         end: millisecondsInHour * 10.5,
-  //       },
-  //       {
-  //         start: millisecondsInHour * 13,
-  //         end: millisecondsInHour * 15.5,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: 'Bunni',
-  //     appointments: [
-  //       {
-  //         start: millisecondsInHour * 7.5,
-  //         end: millisecondsInHour * 8.5,
-  //       },
-  //     ],
-  //   },
-  // ].map((p, idx) => ({
-  //   ...p,
-  //   appointments: p.appointments.map((a) => {
-  //     const color = idx === 1 ? color1 : idx === 2 ? color2 : color3
-  //     const bg = theme === 'light' ? `bg-${color}-300` : `bg-${color}-900`
-  //     const header = theme === 'light' ? `bg-${color}-800` : `bg-${color}-400`
-  //     const borderColor = `border-${color}-700`
-
-  //     return { ...a, color: bg, headerColor: header, borderColor }
-  //   }),
-  // }))
+  const [view, setView] = useState<View>('week')
 
   const { data: appointments } = useQuery({
     queryKey: [
@@ -176,8 +104,6 @@ export const Schedule = () => {
     }
   })
 
-  // console.log()
-
   const plans: Plan[] = apptsByDay.map(({ date, appointments }) => {
     return {
       title: format(date, 'EEEE'),
@@ -199,13 +125,10 @@ export const Schedule = () => {
           color: bg,
           headerColor: header,
           borderColor,
-          // color: `bg-green-600`,
         }
       }),
     }
   })
-
-  // console.log(plans)
 
   return (
     <>
@@ -233,14 +156,14 @@ export const Schedule = () => {
           )}
         </div>
 
-        <nav className="flex p-1 bg-muted rounded-lg gap-1">
+        <nav className="flex p-0.5 bg-input/30 rounded-lg gap-1">
           {(['day', 'week'] as View[]).map((str) => (
             <Button
               key={str}
               size="sm"
               variant={view === str ? 'outline' : 'ghost'}
               className={cn(
-                'p-1.5 font-bold',
+                'p-1.5 font-bold rounded-lg',
                 view === str ? '' : 'text-muted-foreground border-transparent',
               )}
               onClick={() => setView(str)}

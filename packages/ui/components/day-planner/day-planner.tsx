@@ -138,7 +138,10 @@ export const DayPlanner = ({
       )}
       style={{ maxHeight: 'inherit' }}
     >
-      <div className="flex h-10 shrink-0 sticky top-0 bg-background z-20">
+      <div
+        className="flex h-10 shrink-0 sticky top-0 bg-background z-20"
+        style={{ minWidth: `calc(${plans.length} * ${columnWidth})` }}
+      >
         <div
           className={cn(
             'h-full p-1 flex items-center justify-end text-[11px] text-muted-foreground/70 border-b sticky left-0 bg-background',
@@ -183,7 +186,11 @@ export const DayPlanner = ({
         </div>
       </div>
 
-      <div className={`relative flex flex-col grow`} {...rest}>
+      <div
+        className={`relative flex flex-col grow`}
+        {...rest}
+        style={{ minWidth: `calc(${plans.length} * ${columnWidth})` }}
+      >
         <div className="relative w-full">
           {Array(intervals)
             .fill(null)
