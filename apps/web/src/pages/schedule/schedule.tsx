@@ -4,6 +4,8 @@ import {
   DatePicker,
   DayPlanner,
   Label,
+  MonthPlanner,
+  Multiselect,
   PingingDot,
   Plan,
   WeekPicker,
@@ -12,7 +14,7 @@ import {
   useStateWithLocalStorage,
 } from '@repo/ui'
 import { useState } from 'react'
-import { Appointment } from '@repo/models'
+import { Appointment, User } from '@repo/models'
 import { useTheme } from '../../context/ThemeProvider'
 import {
   eachDayOfInterval,
@@ -30,7 +32,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api'
 import { AppointmentContent } from './appointment-content'
 
-type View = 'day' | 'week'
+type View = 'day' | 'week' | 'month'
 
 export const Schedule = () => {
   const today = new Date(Date.now())
@@ -39,8 +41,13 @@ export const Schedule = () => {
     'calendar-show-weekend',
     false,
   )
+
   const [selectedDate, setSelectedDate] = useState(today)
   const [view, setView] = useStateWithLocalStorage<View>('calendar-view', 'day')
+  const [selectedUsers, setSelectedUsers] = useStateWithLocalStorage<string[]>(
+    'selected-user-calendars',
+    [],
+  )
 
   const selectedDateRange: { from: Date; to: Date } = {
     from: startOfWeek(selectedDate),
@@ -56,11 +63,21 @@ export const Schedule = () => {
 
   const { theme } = useTheme()
 
+  const { data: users } = useQuery({
+    queryKey: ['users-for-appointments-filtering'],
+    queryFn: async () => {
+      const { data: res } = await api.get('api/users?pageSize=499')
+      const { data } = res
+      return (Array.isArray(data) ? data : []) as User[]
+    },
+  })
+
   const { data: appointments } = useQuery({
     queryKey: [
       `appointments`,
       selectedDateRange.from.toISOString(),
       selectedDateRange.to.toISOString(),
+      selectedUsers.join(','),
     ],
     queryFn: async () => {
       const query = new URLSearchParams()
@@ -73,6 +90,10 @@ export const Schedule = () => {
         query.set('endsAt', viewedDateRange.to.toISOString())
       }
 
+      if (selectedUsers.length) {
+        query.set('users', selectedUsers.join(','))
+      }
+
       const { data } = await api.get<Appointment[]>(
         `api/appointments?${query.toString()}`,
       )
@@ -82,6 +103,7 @@ export const Schedule = () => {
         endsAt: new Date(a.endsAt),
       }))
     },
+    placeholderData: (prev) => prev,
   })
 
   const datesArr =
@@ -91,8 +113,6 @@ export const Schedule = () => {
           start: viewedDateRange.from,
           end: viewedDateRange.to,
         })
-
-  // const apptsByDay = Object.groupBy(items)
 
   const apptsByDay = datesArr.map((d) => {
     return {
@@ -129,8 +149,9 @@ export const Schedule = () => {
 
         return {
           ...a,
-          startsAt: a.startsAt.getTime() - startOfDay(a.startsAt).getTime(),
-          endsAt: a.endsAt.getTime() - startOfDay(a.startsAt).getTime(),
+          relativeStartsAt:
+            a.startsAt.getTime() - startOfDay(a.startsAt).getTime(),
+          relativeEndsAt: a.endsAt.getTime() - startOfDay(a.startsAt).getTime(),
           color: bg,
           headerColor: header,
           borderColor,
@@ -153,6 +174,7 @@ export const Schedule = () => {
             </DatePicker>
           ) : (
             <WeekPicker
+              size="sm"
               date={viewedDateRange}
               setDateRange={({ from }) =>
                 setSelectedDate(from ? from : new Date(Date.now()))
@@ -165,7 +187,7 @@ export const Schedule = () => {
         </div>
 
         <nav className="flex p-0.5 bg-input/30 rounded-lg gap-1">
-          {(['day', 'week'] as View[]).map((str) => (
+          {(['day', 'week', 'month'] as View[]).map((str) => (
             <Button
               key={str}
               size="sm"
@@ -180,7 +202,7 @@ export const Schedule = () => {
             </Button>
           ))}
         </nav>
-        {view === 'week' && (
+        {view !== 'day' && (
           <div className="flex gap-2">
             <Checkbox
               checked={showWeekend}
@@ -193,6 +215,17 @@ export const Schedule = () => {
             </Label>
           </div>
         )}
+        <Multiselect
+          triggerLabel="Users"
+          options={(users ?? []).map(({ firstName, lastName, id }) => ({
+            id,
+            label: firstName + ' ' + lastName,
+          }))}
+          heading="Users"
+          placeholder={`Find a user's calendar`}
+          value={selectedUsers}
+          setValue={setSelectedUsers}
+        />
       </div>
       <div className="flex h-full w-full overflow-y-hidden">
         <div className="flex flex-col w-full max-h-[calc(100dvh-8rem)]">
@@ -211,6 +244,12 @@ export const Schedule = () => {
             }}
             plans={plans}
             appointmentContent={AppointmentContent}
+          />
+          <MonthPlanner
+            className={cn(view !== 'month' && 'hidden')}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            showWeekend={showWeekend}
           />
         </div>
       </div>

@@ -1,0 +1,13 @@
+.currentTimeIndicator {
+  .tooltip {
+    display: none;
+    color: var(--background);
+    background: var(--foreground);
+  }
+
+  &:hover {
+    .tooltip {
+      display: block;
+    }
+  }
+}

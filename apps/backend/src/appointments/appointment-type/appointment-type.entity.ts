@@ -12,7 +12,6 @@ import {
   mockAppointmentColor,
   mockAppointmentType,
 } from '@repo/models'
-import { randSentence } from '@ngneat/falso'
 
 @Entity({ name: 'appointment_types' })
 export class AppointmentTypeEntity {

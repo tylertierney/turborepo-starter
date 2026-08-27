@@ -18,11 +18,15 @@ import { auth } from '../auth.js'
 import { InvitationEntity } from '../invitations/invitation.entity.js'
 import { hoursToMilliseconds } from 'date-fns'
 import { AppointmentEntity } from '../appointments/appointment.entity.js'
-import { appointmentTypes, mockAppointmentType } from '@repo/models'
+import { appointmentTypes, mockAppointmentType, mockClinic } from '@repo/models'
 import {
   AppointmentTypeEntity,
   mockAppointmentTypeEntity,
 } from '../appointments/appointment-type/appointment-type.entity.js'
+import {
+  ClinicRoomEntity,
+  mockClinicRoomName,
+} from '../clinic-room/clinic-room.entity.js'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
@@ -51,12 +55,15 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
 
     @InjectRepository(AppointmentEntity)
     private readonly appointmentsRepository: Repository<AppointmentEntity>,
+
+    @InjectRepository(ClinicRoomEntity)
+    private readonly clinicRoomRepository: Repository<ClinicRoomEntity>,
   ) {}
 
   async onApplicationBootstrap() {
-    if (process.env.NODE_ENV === 'development') {
-      await this.resetAndSeedDatabase()
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    //   await this.resetAndSeedDatabase()
+    // }
   }
 
   private resetAndSeedDatabase = async () => {
@@ -249,9 +256,34 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       },
     })
 
-    const appts = finalSavedClinics
-      .map(({ id: clinicId, practice, users }) =>
-        Array(300)
+    const clinicRooms = finalSavedClinics
+      .map(c =>
+        Array(randNumber({ min: 2, max: 6 }))
+          .fill(null)
+          .map(
+            () =>
+              new ClinicRoomEntity({
+                clinic: c,
+                name: mockClinicRoomName(),
+              }),
+          ),
+      )
+      .flat()
+
+    const savedRooms = await this.clinicRoomRepository.save(clinicRooms)
+
+    const finalSavedRooms = await this.clinicRoomRepository.find({
+      relations: {
+        clinic: {
+          users: true,
+          practice: true,
+        },
+      },
+    })
+
+    const appts = finalSavedRooms
+      .map(room =>
+        Array(100)
           .fill(null)
           .map(() => {
             const startTime = randFutureDate()
@@ -267,18 +299,59 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
           })
           .map(({ startsAt, endsAt }) => {
             return new AppointmentEntity({
-              primaryProvider: users[~~(Math.random() * users.length)],
-              practiceId: practice.id,
-              clinicId,
+              primaryProvider:
+                room.clinic.users[~~(Math.random() * room.clinic.users.length)],
+              practiceId: room.clinic.practice.id,
+              clinicId: room.clinic.id,
               startsAt,
               endsAt,
               name: randSentence(),
               description: randParagraph(),
               type: savedApptTypes[~~(Math.random() * savedApptTypes.length)],
+              room,
             })
           }),
       )
       .flat()
+
+    await this.appointmentsRepository.save(appts)
+
+    // const savedClinicRooms = await this.clinicRoomRepository.find({
+    //   relations: {
+    //     clinic: true,
+    //   }
+    // })
+
+    // const appts = finalSavedClinics
+    //   .map(({ id: clinicId, practice, users }) =>
+    //     Array(300)
+    //       .fill(null)
+    //       .map(() => {
+    //         const startTime = randFutureDate()
+    //         const endTime =
+    //           startTime.getTime() +
+    //           randNumber({
+    //             min: hoursToMilliseconds(1),
+    //             max: hoursToMilliseconds(4),
+    //           })
+
+    //         // return new Date(startTime, new Date(endTime))
+    //         return { startsAt: new Date(startTime), endsAt: new Date(endTime) }
+    //       })
+    //       .map(({ startsAt, endsAt }) => {
+    //         return new AppointmentEntity({
+    //           primaryProvider: users[~~(Math.random() * users.length)],
+    //           practiceId: practice.id,
+    //           clinicId,
+    //           startsAt,
+    //           endsAt,
+    //           name: randSentence(),
+    //           description: randParagraph(),
+    //           type: savedApptTypes[~~(Math.random() * savedApptTypes.length)],
+    //         })
+    //       }),
+    //   )
+    //   .flat()
 
     await this.appointmentsRepository.save(appts)
   }

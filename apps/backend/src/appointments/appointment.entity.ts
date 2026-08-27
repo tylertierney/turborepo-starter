@@ -9,7 +9,7 @@ import { AppointmentTypeEntity } from './appointment-type/appointment-type.entit
 import { PracticeEntity } from '../practices/practice.entity.js'
 import { ClinicEntity } from '../clinics/clinic.entity.js'
 import { UserEntity } from '../users/user.entity.js'
-import { ClinicRoomEntity } from './clinic-room/clinic-room.entity.js'
+import { ClinicRoomEntity } from '../clinic-room/clinic-room.entity.js'
 
 @Entity({ name: 'appointments' })
 export class AppointmentEntity {
@@ -24,7 +24,7 @@ export class AppointmentEntity {
   type!: AppointmentTypeEntity
 
   @ManyToOne(() => ClinicRoomEntity)
-  room!: ClinicRoomEntity
+  room?: ClinicRoomEntity
 
   @Column()
   name: string = ''

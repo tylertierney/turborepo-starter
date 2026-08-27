@@ -2,7 +2,7 @@ import { addDays } from 'date-fns'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { AppointmentEntity } from './appointment.entity.js'
-import { Between, Repository } from 'typeorm'
+import { Between, In, Repository } from 'typeorm'
 import { RequestContext } from '../context/request-context.service.js'
 
 @Injectable()
@@ -13,13 +13,20 @@ export class AppointmentsService {
     // private readonly requestContext: RequestContext,
   ) {}
 
-  findAllByStartDate(startDate: Date, endDate?: Date) {
+  findAllByStartDate(startDate: Date, endDate?: Date, userIds?: string[]) {
     // const { practiceId } = this.requestContext
 
     return this.appointmentsRepository.find({
       where: {
         // practiceId,
         startsAt: Between(startDate, endDate || addDays(startDate, 1)),
+        ...(userIds?.length
+          ? {
+              primaryProvider: {
+                id: In(userIds),
+              },
+            }
+          : {}),
       },
       relations: {
         type: true,

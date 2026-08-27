@@ -4,7 +4,9 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm'
 import {
   AddressEntity,
@@ -12,7 +14,8 @@ import {
 } from '../addresses/address.entity.js'
 import { PracticeEntity } from '../practices/practice.entity.js'
 import { UserEntity } from '../users/user.entity.js'
-import { mockClinic, mockPractice } from '@repo/models'
+import { mockClinic } from '@repo/models'
+import { ClinicRoomEntity } from '../clinic-room/clinic-room.entity.js'
 
 @Entity({ name: 'clinics' })
 export class ClinicEntity {
@@ -50,6 +53,11 @@ export class ClinicEntity {
     },
   })
   users!: UserEntity[]
+
+  @OneToMany(() => ClinicRoomEntity, clinicRoom => clinicRoom.clinic, {
+    cascade: true,
+  })
+  rooms!: Relation<ClinicRoomEntity[]>
 }
 
 export const mockClinicEntity = (
@@ -73,6 +81,7 @@ export const mockClinicEntity = (
     image: temp.image,
     address: mockAddressEntity(),
     users: [],
+    rooms: [],
     ...partial,
   })
 }

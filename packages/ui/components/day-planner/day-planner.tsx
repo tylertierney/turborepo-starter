@@ -1,4 +1,5 @@
-import { ComponentProps, ReactNode } from 'react'
+import styles from './day-planner.module.scss'
+import { ComponentProps, FC, Fragment, ReactNode } from 'react'
 import { cn } from '../../lib/utils'
 import { addMinutes, format, startOfDay } from 'date-fns'
 import { Clock } from 'lucide-react'
@@ -24,17 +25,49 @@ import { Button } from '../ui/button'
 import { Appointment } from '../../../models/dist/src/appointment'
 import { useStateWithLocalStorage } from '../../hooks/use-state-with-local-storage'
 
+// export type DayPlannerAppointment<T,> = T & {
+//   /**
+//        * Milliseconds from start of day
+//        */
+//       startsAt: number
+//       /**
+//        * Milliseconds from start of day
+//        */
+//       endsAt: number
+//       color?: string
+//       headerColor?: string
+//       borderColor?: string
+// }
+
+export type DayPlannerAppointment = Appointment & {
+  /**
+   * Milliseconds from start of day
+   */
+  relativeStartsAt: number
+  /**
+   * Milliseconds from start of day
+   */
+  relativeEndsAt: number
+  color?: string
+  headerColor?: string
+  borderColor?: string
+}
+
 type ItemWithStackIdx<T extends object> = T & {
   stackIndex: number
   sameStartIndex: number
   sameStartCount: number
 }
 
-const addStackIdxToAppts = <T extends { startsAt: number; endsAt: number }>(
+const addStackIdxToAppts = <
+  T extends { relativeStartsAt: number; relativeEndsAt: number },
+>(
   items: T[] = [],
   dangerzone = 10 * 60 * 1000, // 10 minutes
 ): ItemWithStackIdx<T>[] => {
-  const sorted = items.toSorted((a, b) => a.startsAt - b.startsAt)
+  const sorted = items.toSorted(
+    (a, b) => a.relativeStartsAt - b.relativeStartsAt,
+  )
 
   if (!sorted.length) return []
 
@@ -47,7 +80,7 @@ const addStackIdxToAppts = <T extends { startsAt: number; endsAt: number }>(
     const curr = sorted[i]
     const prev = sorted[i - 1]
 
-    if (curr.startsAt - prev.startsAt <= dangerzone) {
+    if (curr.relativeStartsAt - prev.relativeStartsAt <= dangerzone) {
       currentGroup.push(curr)
     } else {
       groups.push(currentGroup)
@@ -72,7 +105,7 @@ const addStackIdxToAppts = <T extends { startsAt: number; endsAt: number }>(
       const prevItem = result.at(-1)
 
       const stackIndex =
-        prevItem && prevItem.endsAt > curr.startsAt
+        prevItem && prevItem.relativeEndsAt > curr.relativeStartsAt
           ? prevItem.stackIndex + 1
           : 0
 
@@ -97,34 +130,20 @@ const minutesInADay = 60 * 24
 export type Plan = {
   currentDay?: boolean
   title: string | ReactNode
-  appointments: Array<
-    Appointment & {
-      /**
-       * Milliseconds from start of day
-       */
-      startsAt: number
-      /**
-       * Milliseconds from start of day
-       */
-      endsAt: number
-      color?: string
-      headerColor?: string
-      borderColor?: string
-    }
-  >
+  appointments: DayPlannerAppointment[]
 }
 
 export type DayPlannerProps = {
   interval?: 5 | 10 | 15 | 30 | 60
   plans: Plan[]
-  appointmentContent?: (appt: Appointment) => ReactNode
+  appointmentContent?: FC<Appointment>
 }
 
 export const DayPlanner = ({
   interval = 30,
   plans = [],
   className,
-  appointmentContent,
+  appointmentContent: AppointmentContent,
   ...rest
 }: DayPlannerProps & ComponentProps<'div'>) => {
   const [selectedInterval, setSelectedInterval] =
@@ -223,7 +242,7 @@ export const DayPlanner = ({
                     )}
                   </div>
                   <div className="flex h-full grow">
-                    {plans.map((plan, idx) => (
+                    {plans.map((_, idx) => (
                       <div
                         key={idx}
                         className="flex flex-col grow shrink-0 border-r border-r-muted"
@@ -258,98 +277,148 @@ export const DayPlanner = ({
                 selectedInterval * 60 * 1000,
               )
 
-              return appts.map((appt, idx) => {
-                const top = (appt.startsAt / millisecondsInDay) * 100
-                const duration = Math.abs(appt.endsAt - appt.startsAt)
+              return (
+                <Fragment key={planIdx}>
+                  {plan.currentDay && (
+                    <div
+                      className={cn(
+                        'bg-blue-400 rounded-full',
+                        styles.currentTimeIndicator,
+                      )}
+                      style={{
+                        position: 'absolute',
+                        top:
+                          ((new Date(Date.now()).getTime() -
+                            startOfDay(new Date(Date.now())).getTime()) /
+                            millisecondsInDay) *
+                            100 +
+                          '%',
+                        left: `calc(${planIdx} * ${columnWidth})`,
+                        width: columnWidth,
+                        height: '2px',
+                        pointerEvents: 'all',
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        className="bg-blue-400 rounded-full"
 
-                const height =
-                  appt.startsAt + duration >= millisecondsInDay
-                    ? ((millisecondsInDay - appt.startsAt) /
-                        millisecondsInDay) *
-                      100
-                    : (duration / millisecondsInDay) * 100
-                const stackIdx = appt.stackIndex
+                        style={{
+                          height: '10px',
+                          width: '10px',
+                          marginTop: '-4px',
+                          marginLeft: '-6px',
+                        }}
+                      ></div>
+                      <div
+                        className={cn(
+                          'bg-foreground text-background text-[11px] px-1 rounded-xs',
+                          styles.tooltip,
+                        )}
+                        style={{
+                          marginTop: '-2.3rem',
+                          left: 0,
+                          width: 'fit-content',
+                        }}
+                      >
+                        {format(new Date(Date.now()), 'EEE h:mm aa')}
+                      </div>
+                    </div>
+                  )}
 
-                const STACK_OFFSET = 16
+                  {appts.map((appt, idx) => {
+                    const top =
+                      (appt.relativeStartsAt / millisecondsInDay) * 100
+                    const duration = Math.abs(
+                      appt.relativeEndsAt - appt.relativeStartsAt,
+                    )
 
-                const sameStart = appt.sameStartCount > 1
+                    const height =
+                      appt.relativeStartsAt + duration >= millisecondsInDay
+                        ? ((millisecondsInDay - appt.relativeStartsAt) /
+                            millisecondsInDay) *
+                          100
+                        : (duration / millisecondsInDay) * 100
+                    const stackIdx = appt.stackIndex
 
-                const left = sameStart
-                  ? `calc(${planIdx} * ${columnWidth} + 8px + ((${columnWidth} - 8px) / ${appt.sameStartCount}) * ${appt.sameStartIndex})`
-                  : `calc(${planIdx} * ${columnWidth} + 8px + ${stackIdx * STACK_OFFSET}px)`
+                    const STACK_OFFSET = 16
 
-                const width = sameStart
-                  ? `calc((${columnWidth} - 8px) / ${appt.sameStartCount})`
-                  : `calc(${columnWidth} - 16px - ${stackIdx * STACK_OFFSET}px)`
+                    const sameStart = appt.sameStartCount > 1
 
-                return (
-                  <Dialog key={'dialog' + planIdx * appts.length + idx}>
-                    <DialogTrigger
-                      nativeButton={false}
-                      render={
-                        <div
-                          className={cn(
-                            'absolute rounded-sm border shadow-lg hover:z-10 flex flex-col overflow-hidden text-xs',
-                            appt.color ? appt.color : 'bg-cyan-400',
-                            appt.borderColor ? appt.borderColor : '',
-                          )}
-                          style={{
-                            pointerEvents: 'all',
-                            top: top + '%',
-                            height: height + '%',
-                            left,
-                            width,
-                          }}
-                        >
-                          <div
-                            className={cn(
-                              'h-2 w-full shrink-0',
-                              appt.headerColor,
-                            )}
-                          ></div>
+                    const left = sameStart
+                      ? `calc(${planIdx} * ${columnWidth} + 8px + ((${columnWidth} - 8px) / ${appt.sameStartCount}) * ${appt.sameStartIndex})`
+                      : `calc(${planIdx} * ${columnWidth} + 8px + ${stackIdx * STACK_OFFSET}px)`
 
-                          <span
-                            className={cn(
-                              'text-background text-[10px] relative font-bold text-nowrap rounded-br self-start pl-1 pr-2',
-                              appt.headerColor,
-                            )}
-                            style={{ top: '-6px' }}
-                          >
-                            {format(
-                              new Date(
-                                startOfDay(new Date()).getTime() +
-                                  appt.startsAt,
-                              ),
-                              'h:mm a',
-                            )}
-                          </span>
+                    const width = sameStart
+                      ? `calc((${columnWidth} - 8px) / ${appt.sameStartCount})`
+                      : `calc(${columnWidth} - 16px - ${stackIdx * STACK_OFFSET}px)`
 
-                          <div className="flex flex-col px-1">
-                            {/* <p>
-                              {appt.primaryProvider.firstName.slice(0, 1) +
-                                '.' +
-                                ' ' +
-                                appt.primaryProvider.lastName}
-                            </p> */}
-                            {appointmentContent?.(appt)}
-                          </div>
-                        </div>
-                      }
-                    />
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Appointment Details</DialogTitle>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose
-                          render={<Button variant="outline">Cancel</Button>}
+                    return (
+                      <Dialog key={'dialog' + planIdx * appts.length + idx}>
+                        <DialogTrigger
+                          nativeButton={false}
+                          render={
+                            <div
+                              className={cn(
+                                'absolute rounded-sm border shadow-lg hover:z-10 flex flex-col overflow-hidden text-[11px]',
+                                appt.color ? appt.color : 'bg-cyan-200',
+                                appt.borderColor ? appt.borderColor : '',
+                              )}
+                              style={{
+                                pointerEvents: 'all',
+                                top: top + '%',
+                                height: height + '%',
+                                left,
+                                width,
+                              }}
+                            >
+                              <div
+                                className={cn(
+                                  'h-2 w-full shrink-0',
+                                  appt.headerColor,
+                                )}
+                              ></div>
+
+                              <span
+                                className={cn(
+                                  'text-background text-[9px] h-5 relative font-bold text-nowrap rounded-br self-start pl-1 pr-2',
+                                  appt.headerColor,
+                                )}
+                                style={{ marginTop: '-10px' }}
+                              >
+                                {format(
+                                  new Date(
+                                    startOfDay(new Date()).getTime() +
+                                      appt.relativeStartsAt,
+                                  ),
+                                  'h:mm a',
+                                )}
+                              </span>
+
+                              <div className="flex flex-col px-1">
+                                {AppointmentContent && (
+                                  <AppointmentContent {...appt} />
+                                )}
+                              </div>
+                            </div>
+                          }
                         />
-                        <Button type="submit">Save changes</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )
-              })
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Appointment Details</DialogTitle>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose
+                              render={<Button variant="outline">Cancel</Button>}
+                            />
+                            <Button type="submit">Save changes</Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )
+                  })}
+                </Fragment>
+              )
             })}
           </div>
         </div>

@@ -8,12 +8,14 @@ import { AddressEntity } from '../addresses/address.entity.js'
 import { InvitationEntity } from '../invitations/invitation.entity.js'
 import { AppointmentTypeEntity } from '../appointments/appointment-type/appointment-type.entity.js'
 import { AppointmentEntity } from '../appointments/appointment.entity.js'
+import { ClinicRoomEntity } from '../clinic-room/clinic-room.entity.js'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       PracticeEntity,
+      ClinicRoomEntity,
       ClinicEntity,
       AddressEntity,
       InvitationEntity,

@@ -20,7 +20,7 @@ export const WeekPicker = ({
   className = '',
   children,
   ...rest
-}: WeekPickerProps & ComponentProps<'button'>) => {
+}: WeekPickerProps & ComponentProps<typeof Button>) => {
   let selectedWeek: DateRange
 
   if (isDateRange(date)) {

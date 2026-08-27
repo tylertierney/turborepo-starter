@@ -99,6 +99,9 @@ export type Appointment = {
   clinicId: string
   primaryProvider: User
   notes?: string
+  room?: {
+    name?: string
+  }
 }
 
 export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
@@ -121,6 +124,9 @@ export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
     clinicId: randUuid(),
     notes: randParagraph(),
     primaryProvider: mockUser(),
+    room: {
+      name: 'Room A',
+    },
     ...partial,
   }
 }

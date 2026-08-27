@@ -1,4 +1,10 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  ParseArrayPipe,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common'
 import { AppointmentsService } from './appointments.service.js'
 import { StartAndEndDateDto } from '../shared/dates/start-and-end-date.dto.js'
 import { ApiOkResponse } from '@nestjs/swagger'
@@ -16,10 +22,16 @@ export class AppointmentsController {
   async findAll(
     @Query(new ValidationPipe({ transform: true }))
     query: StartAndEndDateDto,
+    @Query(
+      'users',
+      new ParseArrayPipe({ optional: true, items: String, separator: ',' }),
+    )
+    userIds: string[],
   ) {
     return this.appointmentsService.findAllByStartDate(
       query.startsAt,
       query.endsAt,
+      userIds,
     )
   }
 }

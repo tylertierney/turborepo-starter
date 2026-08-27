@@ -4,9 +4,12 @@ import { ClinicEntity } from './clinic.entity.js'
 import { ClinicsService } from './clinics.service.js'
 import { ClinicsController } from './clinics.controller.js'
 import { AddressEntity } from '../addresses/address.entity.js'
+import { ClinicRoomEntity } from '../clinic-room/clinic-room.entity.js'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ClinicEntity, AddressEntity])],
+  imports: [
+    TypeOrmModule.forFeature([ClinicEntity, AddressEntity, ClinicRoomEntity]),
+  ],
   providers: [ClinicsService],
   controllers: [ClinicsController],
   exports: [],

@@ -2,8 +2,10 @@ import { Navigate, Outlet, useLocation } from 'react-router'
 import { useSession } from '../hooks/useSession2'
 
 export const ProtectedRoute = () => {
-  const { data: session, isPending } = useSession()
+  const { data, isPending } = useSession()
   const location = useLocation()
+
+  const { user, session } = data || {}
 
   if (isPending) {
     return (
@@ -13,7 +15,7 @@ export const ProtectedRoute = () => {
     )
   }
 
-  if (!session) {
+  if (!session || !user) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

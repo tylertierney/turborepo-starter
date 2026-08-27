@@ -19,14 +19,14 @@ export class PaginationQueryDto {
     description: 'Size of returned pages.',
     example: 10,
     default: 10,
-    maximum: 100,
+    maximum: 500,
     minimum: 1,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(500)
   pageSize?: number = 10
 
   @ApiPropertyOptional({

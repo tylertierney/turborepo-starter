@@ -1,11 +1,11 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm'
-import { ClinicEntity } from '../../clinics/clinic.entity.js'
+import { ClinicEntity } from '../clinics/clinic.entity.js'
 
 @Entity({ name: 'clinic_rooms' })
 export class ClinicRoomEntity {
@@ -17,19 +17,18 @@ export class ClinicRoomEntity {
   id!: string
 
   @Column({ type: 'uuid' })
-  @JoinColumn({ name: 'clinicId' })
   clinicId!: string
 
-  @ManyToOne(() => ClinicEntity, {
+  @ManyToOne(() => ClinicEntity, clinic => clinic.rooms, {
     nullable: false,
   })
-  clinic!: ClinicEntity
+  clinic!: Relation<ClinicEntity>
 
   @Column()
   name: string = ''
 }
 
-const mockClinicRoomName = (): string => {
+export const mockClinicRoomName = (): string => {
   const prefix = ['Room', 'Lane'][~~(Math.random() * 2)]
   const suffix = Array(10)
     .fill(null)
@@ -42,11 +41,11 @@ const mockClinicRoomName = (): string => {
   return prefix + ' ' + suffix
 }
 
-export const mockClinicRoomEntity = (
-  partial: Partial<ClinicRoomEntity>,
-): ClinicRoomEntity => {
-  return new ClinicRoomEntity({
-    name: mockClinicRoomName(),
-    ...partial,
-  })
-}
+// export const mockClinicRoomEntity = (
+//   partial: Partial<ClinicRoomEntity>,
+// ): ClinicRoomEntity => {
+//   return new ClinicRoomEntity({
+//     name: mockClinicRoomName(),
+//     ...partial,
+//   })
+// }
