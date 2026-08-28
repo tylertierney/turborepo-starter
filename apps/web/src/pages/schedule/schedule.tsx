@@ -17,6 +17,7 @@ import { useState } from 'react'
 import { Appointment, User } from '@repo/models'
 import { useTheme } from '../../context/ThemeProvider'
 import {
+  addDays,
   eachDayOfInterval,
   endOfDay,
   endOfWeek,
@@ -25,6 +26,7 @@ import {
   nextDay,
   previousDay,
   startOfDay,
+  startOfMonth,
   startOfWeek,
 } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
@@ -49,17 +51,33 @@ export const Schedule = () => {
     [],
   )
 
-  const selectedDateRange: { from: Date; to: Date } = {
-    from: startOfWeek(selectedDate),
-    to: endOfWeek(selectedDate),
+  const startOfVisibleMonthRange = startOfWeek(startOfMonth(selectedDate), {
+    weekStartsOn: showWeekend ? 0 : 1,
+  })
+
+  let selectedDateRange: { from: Date; to: Date }
+
+  if (view === 'week' || view === 'day') {
+    selectedDateRange = {
+      from: startOfWeek(selectedDate),
+      to: endOfWeek(selectedDate),
+    }
+  } else {
+    selectedDateRange = {
+      from: startOfVisibleMonthRange,
+      to: addDays(startOfVisibleMonthRange, 42),
+    }
   }
 
-  const viewedDateRange: { from: Date; to: Date } = showWeekend
-    ? selectedDateRange
-    : {
+  let viewedDateRange = selectedDateRange
+  if (view === 'week') {
+    if (!showWeekend) {
+      viewedDateRange = {
         from: nextDay(selectedDateRange.from, 1),
         to: previousDay(selectedDateRange.to, 5),
       }
+    }
+  }
 
   const { theme } = useTheme()
 
@@ -85,9 +103,12 @@ export const Schedule = () => {
       if (view === 'day') {
         query.set('startsAt', startOfDay(selectedDate).toISOString())
         query.set('endsAt', endOfDay(selectedDate).toISOString())
-      } else {
+      } else if (view === 'week') {
         query.set('startsAt', viewedDateRange.from.toISOString())
         query.set('endsAt', viewedDateRange.to.toISOString())
+      } else {
+        query.set('startsAt', selectedDateRange.from.toISOString())
+        query.set('endsAt', selectedDateRange.to.toISOString())
       }
 
       if (selectedUsers.length) {
@@ -228,7 +249,7 @@ export const Schedule = () => {
         />
       </div>
       <div className="flex h-full w-full overflow-y-hidden">
-        <div className="flex flex-col w-full max-h-[calc(100dvh-8rem)]">
+        <div className="flex flex-col w-full max-h-[calc(100dvh-7rem)]">
           <DayPlanner
             className={cn(view !== 'day' && 'hidden')}
             plans={plans}
@@ -250,6 +271,11 @@ export const Schedule = () => {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             showWeekend={showWeekend}
+            plans={plans}
+            onDayClick={(d) => {
+              setSelectedDate(d)
+              setView('day')
+            }}
           />
         </div>
       </div>
