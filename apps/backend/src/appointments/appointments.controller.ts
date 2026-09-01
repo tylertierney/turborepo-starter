@@ -27,12 +27,24 @@ export class AppointmentsController {
       new ParseArrayPipe({ optional: true, items: String, separator: ',' }),
     )
     userIds: string[],
+    @Query(
+      'types',
+      new ParseArrayPipe({ optional: true, items: String, separator: ',' }),
+    )
+    appointmentTypeIds: string[],
+    @Query(
+      'statuses',
+      new ParseArrayPipe({ optional: true, items: String, separator: ',' }),
+    )
+    statuses: string[],
   ) {
     // await new Promise(resolve => setTimeout(resolve, 3_000))
-    return this.appointmentsService.findAllByStartDate(
-      query.startsAt,
-      query.endsAt,
+    return this.appointmentsService.findAllByStartDate({
+      startsAt: query.startsAt,
+      endsAt: query.endsAt,
       userIds,
-    )
+      appointmentTypeIds,
+      statuses,
+    })
   }
 }

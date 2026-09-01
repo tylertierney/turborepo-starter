@@ -15,7 +15,7 @@ import {
   useStateWithLocalStorage,
 } from '@repo/ui'
 import { useState } from 'react'
-import { Appointment, User } from '@repo/models'
+import { Appointment, appointmentStatuses, User } from '@repo/models'
 import { useTheme } from '../../context/ThemeProvider'
 import {
   addDays,
@@ -36,14 +36,15 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api'
 import { AppointmentContent } from './appointment-content'
 import { AppointmentDialog } from './appointment-dialog'
+import { snakeCaseToReadable } from '../../utils/utils'
 
 type View = 'day' | 'week' | 'month'
 
-// type ScheduleFilter = {
-//   users: string[]
-//   appointmentTypes: string[]
-//   status: string[]
-// }
+type ScheduleFilter = {
+  users: string[]
+  appointmentTypes: string[]
+  statuses: string[]
+}
 
 export const Schedule = () => {
   const today = new Date(Date.now())
@@ -56,12 +57,25 @@ export const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState(today)
   const [view, setView] = useStateWithLocalStorage<View>('calendar-view', 'day')
 
-  // const [filters, setFilters] = useState({})
-
-  const [selectedUsers, setSelectedUsers] = useStateWithLocalStorage<string[]>(
-    'selected-user-calendars',
-    [],
+  const [filters, setFilters] = useStateWithLocalStorage<ScheduleFilter>(
+    'schedule-filters',
+    {
+      users: [],
+      appointmentTypes: [],
+      statuses: [],
+    },
   )
+
+  const {
+    users: selectedUsers,
+    appointmentTypes: selectedAppointmentTypes,
+    statuses: selectedStatuses,
+  } = filters
+
+  // const [selectedUsers, setSelectedUsers] = useStateWithLocalStorage<string[]>(
+  //   'selected-user-calendars',
+  //   [],
+  // )
 
   const startOfVisibleMonthRange = startOfWeek(startOfMonth(selectedDate), {
     weekStartsOn: showWeekend ? 0 : 1,
@@ -102,13 +116,26 @@ export const Schedule = () => {
     },
   })
 
+  const { data: appointmentTypes } = useQuery({
+    queryKey: ['appointment-types-for-appointments-filtering'],
+    queryFn: async () => {
+      const { data } = await api.get('api/appointment-types')
+
+      return (Array.isArray(data) ? data : []) as Array<{
+        name: string
+        color: string
+        id: string
+      }>
+    },
+  })
+
   const { data: appointments, isFetching } = useQuery({
     queryKey: [
       `appointments`,
       selectedDate.toISOString(),
       selectedDateRange.from.toISOString(),
       selectedDateRange.to.toISOString(),
-      selectedUsers.join(','),
+      filters,
       showWeekend,
     ],
     queryFn: async () => {
@@ -125,8 +152,16 @@ export const Schedule = () => {
         query.set('endsAt', selectedDateRange.to.toISOString())
       }
 
-      if (selectedUsers.length) {
-        query.set('users', selectedUsers.join(','))
+      if (filters.users.length) {
+        query.set('users', filters.users.join(','))
+      }
+
+      if (filters.appointmentTypes.length) {
+        query.set('types', filters.appointmentTypes.join(','))
+      }
+
+      if (filters.statuses.length) {
+        query.set('statuses', filters.statuses.join(','))
       }
 
       const { data } = await api.get<Appointment[]>(
@@ -162,26 +197,38 @@ export const Schedule = () => {
     const currentDay = isSameDay(date, new Date(Date.now()))
     return {
       title: (
-        <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            'flex items-center gap-2 text-sm',
+            view === 'day' && 'min-w-55 justify-between',
+          )}
+        >
           {view === 'day' && (
             <Button
               variant="outline"
-              size="icon-sm"
+              size="icon-xs"
 
               onClick={() => setSelectedDate(subDays(selectedDate, 1))}
             >
               <ChevronLeft />
             </Button>
           )}
-          {currentDay && <PingingDot className="text-blue-400 self-center" />}
-          <b>{format(date, 'EEEE')}</b>{' '}
-          <span className="text-muted-foreground text-xs text-nowrap mt-0.5">
-            {format(date, 'MMM d')}
-          </span>
+          <div className="flex items-center gap-2">
+            {currentDay && (
+              <PingingDot
+                className="text-blue-400 self-center"
+                style={{ width: '16px' }}
+              />
+            )}
+            <b>{format(date, 'EEEE')}</b>{' '}
+            <span className="text-muted-foreground text-xs text-nowrap mt-0.5">
+              {format(date, 'MMM d')}
+            </span>
+          </div>
           {view === 'day' && (
             <Button
               variant="outline"
-              size="icon-sm"
+              size="icon-xs"
 
               onClick={() => setSelectedDate(addDays(selectedDate, 1))}
             >
@@ -285,11 +332,72 @@ export const Schedule = () => {
           heading="Users"
           placeholder={`Find a user's calendar`}
           value={selectedUsers}
-          setValue={setSelectedUsers}
+          setValue={(cb) => {
+            if (typeof cb === 'function') {
+              const users = cb(selectedUsers)
+              setFilters((prev) => ({ ...prev, users }))
+            } else {
+              const users = cb
+              setFilters((prev) => ({ ...prev, users }))
+            }
+          }}
         />
+        <Multiselect
+          triggerLabel="Type"
+          options={(appointmentTypes ?? []).map(({ name, id }) => ({
+            id,
+            label: name,
+          }))}
+          heading="Appointment Type"
+          placeholder={`Filter appointment types`}
+          value={selectedAppointmentTypes}
+          setValue={(cb) => {
+            if (typeof cb === 'function') {
+              const types = cb(selectedAppointmentTypes)
+              setFilters((prev) => ({ ...prev, appointmentTypes: types }))
+            } else {
+              const types = cb
+              setFilters((prev) => ({ ...prev, appointmentTypes: types }))
+            }
+          }}
+        />
+        {/* <Multiselect
+          triggerLabel="Status"
+          options={(appointmentStatuses ?? []).map((status, idx) => ({
+            id: String(idx),
+            label: snakeCaseToReadable(status),
+          }))}
+          heading="Appointment Status"
+          placeholder={`Filter by status`}
+          value={selectedStatuses.map((s) =>
+            String(appointmentStatuses.findIndex((v) => v === s) as number),
+          )}
+          setValue={(cb) => {
+            if (typeof cb === 'function') {
+              const statuses = cb(selectedStatuses)
+              setFilters((prev) => ({
+                ...prev,
+                statuses: statuses.map(
+                  (id) => appointmentStatuses[parseInt(id, 10)] as string,
+                ),
+              }))
+            } else {
+              const statuses = cb
+              setFilters((prev) => ({
+                ...prev,
+                statuses: statuses.map(
+                  (id) => appointmentStatuses[parseInt(id, 10)] as string,
+                ),
+              }))
+            }
+          }}
+        /> */}
       </div>
       <div className="flex h-full w-full overflow-y-hidden">
-        <div className="flex flex-col w-full max-h-[calc(100dvh-7rem)]">
+        <div
+          className="flex flex-col w-full max-h-[calc(100dvh-8rem)]"
+          // style={{ marginTop: '-4px', paddingTop: '4px' }}
+        >
           <DayPlanner
             className={cn(view !== 'day' && 'hidden')}
             plans={plans}

@@ -25,20 +25,6 @@ import { Button } from '../ui/button'
 import { Appointment } from '../../../models/dist/src/appointment'
 import { useStateWithLocalStorage } from '../../hooks/use-state-with-local-storage'
 
-// export type DayPlannerAppointment<T,> = T & {
-//   /**
-//        * Milliseconds from start of day
-//        */
-//       startsAt: number
-//       /**
-//        * Milliseconds from start of day
-//        */
-//       endsAt: number
-//       color?: string
-//       headerColor?: string
-//       borderColor?: string
-// }
-
 export type DayPlannerAppointment = Appointment & {
   /**
    * Milliseconds from start of day
@@ -53,7 +39,7 @@ export type DayPlannerAppointment = Appointment & {
   borderColor?: string
 }
 
-type ItemWithStackIdx<T extends object> = T & {
+export type ItemWithStackIdx<T extends object> = T & {
   stackIndex: number
   sameStartIndex: number
   sameStartCount: number
@@ -63,7 +49,8 @@ const addStackIdxToAppts = <
   T extends { relativeStartsAt: number; relativeEndsAt: number },
 >(
   items: T[] = [],
-  dangerzone = 10 * 60 * 1000, // 10 minutes
+  dangerzone = 10 * 60 * 1000,
+  maxSameStartCount = 8,
 ): ItemWithStackIdx<T>[] => {
   const sorted = items.toSorted(
     (a, b) => a.relativeStartsAt - b.relativeStartsAt,
@@ -90,7 +77,6 @@ const addStackIdxToAppts = <
 
   groups.push(currentGroup)
 
-  // Flatten the groups while preserving the existing stack behavior.
   const result: ItemWithStackIdx<T>[] = []
 
   for (const group of groups) {
@@ -105,7 +91,10 @@ const addStackIdxToAppts = <
       const prevItem = result.at(-1)
 
       const stackIndex =
-        prevItem && prevItem.relativeEndsAt > curr.relativeStartsAt
+        sameStartCount === 1 &&
+        prevItem &&
+        prevItem.sameStartCount === 1 &&
+        prevItem.relativeEndsAt > curr.relativeStartsAt
           ? prevItem.stackIndex + 1
           : 0
 
@@ -157,7 +146,7 @@ export const DayPlanner = ({
   return (
     <div
       className={cn(
-        `@container flex flex-col grow overflow-auto overscroll-none`,
+        `@container flex flex-col grow overflow-auto overscroll-none scrollbar-none`,
         className,
       )}
       style={{
@@ -343,7 +332,7 @@ export const DayPlanner = ({
                         : (duration / millisecondsInDay) * 100
                     const stackIdx = appt.stackIndex
 
-                    const STACK_OFFSET = 16
+                    const STACK_OFFSET = 8
 
                     const sameStart = appt.sameStartCount > 1
 
@@ -353,7 +342,7 @@ export const DayPlanner = ({
 
                     const width = sameStart
                       ? `calc((${columnWidth} - 8px) / ${appt.sameStartCount})`
-                      : `calc(${columnWidth} - 16px - ${stackIdx * STACK_OFFSET}px)`
+                      : `calc(${columnWidth} - ${STACK_OFFSET}px - ${stackIdx * STACK_OFFSET}px)`
 
                     return (
                       <Dialog key={'dialog' + planIdx * appts.length + idx}>
@@ -362,7 +351,7 @@ export const DayPlanner = ({
                           render={
                             <div
                               className={cn(
-                                'absolute rounded-sm border shadow-lg hover:z-10 flex flex-col overflow-hidden text-[11px]',
+                                'absolute rounded-sm border shadow-lg flex flex-col overflow-hidden text-[11px]',
                                 appt.color ? appt.color : 'bg-cyan-200',
                                 appt.borderColor ? appt.borderColor : '',
                               )}
@@ -405,9 +394,14 @@ export const DayPlanner = ({
                             </div>
                           }
                         />
-                        <DialogContent>
+                        <DialogContent className="sm:min-w-lg md:min-w-xl">
                           <DialogHeader>
-                            <DialogTitle>Appointment Details</DialogTitle>
+                            <DialogTitle className="flex gap-2">
+                              <span>Appointment Details</span>
+                              <span className="text-muted-foreground">
+                                {format(appt.startsAt, 'EEE, MMM d')}
+                              </span>
+                            </DialogTitle>
                           </DialogHeader>
                           {/* {AppointmentContent && (
                             <AppointmentContent {...appt} />

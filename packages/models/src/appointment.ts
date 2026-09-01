@@ -2,6 +2,7 @@ import { minutesToMilliseconds } from 'date-fns'
 import { randFutureDate, randParagraph, randUuid } from '@ngneat/falso'
 import { mockUser, User } from './user.js'
 import { mockPatient, Patient } from './patient.js'
+import { Clinic, mockClinic } from './clinic.js'
 
 // keep:
 // slate
@@ -116,6 +117,7 @@ export type Appointment = {
     name?: string
   }
   patient: Patient
+  clinic?: Clinic
 }
 
 export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
@@ -142,6 +144,7 @@ export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
       name: 'Room A',
     },
     patient: mockPatient(),
+    clinic: mockClinic(),
     ...partial,
   }
 }

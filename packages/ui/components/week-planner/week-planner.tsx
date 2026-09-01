@@ -36,7 +36,7 @@ export const WeekPlanner = ({
   return (
     <div
       className={cn(
-        'flex flex-col grow overflow-auto overscroll-none',
+        'flex flex-col grow overflow-auto overscroll-none scrollbar-none',
         className,
       )}
       style={{ maxHeight: 'inherit' }}
@@ -57,7 +57,7 @@ export const WeekPlanner = ({
             <ChevronLeft />
           </Button>
 
-          <h1>
+          <h1 className="text-sm">
             {format(dateRange?.from || new Date(Date.now()), 'eee. MMM d')}
             &nbsp;-&nbsp;
             {format(dateRange?.to || new Date(Date.now()), 'eee. MMM d')}

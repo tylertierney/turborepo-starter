@@ -13,18 +13,42 @@ export class AppointmentsService {
     private readonly requestContext: RequestContext,
   ) {}
 
-  findAllByStartDate(startDate: Date, endDate?: Date, userIds?: string[]) {
+  findAllByStartDate({
+    startsAt,
+    endsAt,
+    userIds,
+    appointmentTypeIds,
+    statuses,
+  }: {
+    startsAt: Date
+    endsAt?: Date
+    userIds?: string[]
+    appointmentTypeIds?: string[]
+    statuses?: string[]
+  }) {
     const { practiceId } = this.requestContext
 
     return this.appointmentsRepository.find({
       where: {
         practiceId,
-        startsAt: Between(startDate, endDate || addDays(startDate, 1)),
+        startsAt: Between(startsAt, endsAt || addDays(startsAt, 1)),
         ...(userIds?.length
           ? {
               primaryProvider: {
                 id: In(userIds),
               },
+            }
+          : {}),
+        ...(appointmentTypeIds?.length
+          ? {
+              type: {
+                id: In(appointmentTypeIds),
+              },
+            }
+          : {}),
+        ...(statuses?.length
+          ? {
+              status: In(statuses),
             }
           : {}),
       },

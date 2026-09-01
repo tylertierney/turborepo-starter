@@ -62,6 +62,7 @@ export const Multiselect = ({
               {options.map(({ id, label, disabled = false }) => {
                 return (
                   <CommandItem
+                    key={id}
                     disabled={disabled}
                     className="p-0"
                     hideIcon={true}

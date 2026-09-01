@@ -8,11 +8,12 @@ import {
   Circle,
   CircleCheckBig,
   ClockIcon,
+  MapPin,
   XIcon,
 } from 'lucide-react'
 import { ComponentProps, ReactNode, useState } from 'react'
 import { snakeCaseToReadable } from '../../utils/utils'
-import { differenceInYears } from 'date-fns'
+import { differenceInYears, format } from 'date-fns'
 import { Link } from 'react-router'
 
 const Datapoint = ({
@@ -49,7 +50,16 @@ export const getIconFromApptStatus = (status: AppointmentStatus): ReactNode => {
 }
 
 export const AppointmentDialog = (appt: DayPlannerAppointment) => {
-  const { primaryProvider, status, room, type, patient } = appt
+  const {
+    primaryProvider,
+    status,
+    room,
+    type,
+    patient,
+    startsAt,
+    endsAt,
+    clinic,
+  } = appt
 
   const [patientInfoExpanded, setPatientInfoExpanded] = useState(false)
 
@@ -63,15 +73,11 @@ export const AppointmentDialog = (appt: DayPlannerAppointment) => {
     }) + ` (age ${age})`
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <div className="flex items-start justify-between">
         <Datapoint
-          label="Provider"
-          value={
-            <b>
-              {primaryProvider.firstName} {primaryProvider.lastName}
-            </b>
-          }
+          label="Time"
+          value={format(startsAt, 'h:mm a') + ' - ' + format(endsAt, 'h:mm a')}
         />
         <div className="flex items-center gap-2">
           <Badge className="rounded-sm" variant="secondary">
@@ -84,6 +90,29 @@ export const AppointmentDialog = (appt: DayPlannerAppointment) => {
             </Badge>
           )}
         </div>
+      </div>
+
+      <div className="flex items-start justify-between">
+        <Datapoint
+          label="Provider"
+          value={
+            <b>
+              {primaryProvider.firstName} {primaryProvider.lastName}
+            </b>
+          }
+        />
+
+        {clinic && (
+          <Datapoint
+            label="Location"
+            value={
+              <span className="flex items-center gap-1">
+                <MapPin size="16" />
+                <span>{clinic?.name || 'N/A'}</span>
+              </span>
+            }
+          />
+        )}
       </div>
       <Datapoint
         label="Appointment Type"
@@ -98,7 +127,7 @@ export const AppointmentDialog = (appt: DayPlannerAppointment) => {
       />
 
       <div className="flex flex-col border rounded">
-        <div className="flex flex-col p-2 gap-2">
+        <div className="flex flex-col p-2 gap-3">
           <div className="flex justify-between">
             <Datapoint
               label="Patient"
@@ -143,7 +172,7 @@ export const AppointmentDialog = (appt: DayPlannerAppointment) => {
         </div>
         <Button
           variant="link"
-          className="text-link"
+          className="text-link decoration-0"
           onClick={() => setPatientInfoExpanded((prev) => !prev)}
         >
           View {patientInfoExpanded ? 'Less' : 'More'}{' '}
