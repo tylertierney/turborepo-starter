@@ -10,15 +10,15 @@ export class AppointmentsService {
   constructor(
     @InjectRepository(AppointmentEntity)
     private appointmentsRepository: Repository<AppointmentEntity>,
-    // private readonly requestContext: RequestContext,
+    private readonly requestContext: RequestContext,
   ) {}
 
   findAllByStartDate(startDate: Date, endDate?: Date, userIds?: string[]) {
-    // const { practiceId } = this.requestContext
+    const { practiceId } = this.requestContext
 
     return this.appointmentsRepository.find({
       where: {
-        // practiceId,
+        practiceId,
         startsAt: Between(startDate, endDate || addDays(startDate, 1)),
         ...(userIds?.length
           ? {
@@ -33,6 +33,7 @@ export class AppointmentsService {
         primaryProvider: true,
         clinic: true,
         room: true,
+        patient: true,
       },
     })
   }

@@ -15,6 +15,7 @@ import { RequestContextModule } from './context/request-context.module.js'
 import { APP_GUARD } from '@nestjs/core'
 import { RequestContextGuard } from './context/request-context.guard.js'
 import { AppointmentsModule } from './appointments/appointments.module.js'
+import { PatientsModule } from './patients/patients.module.js'
 
 const environment = process.env['NODE_ENV']
 
@@ -56,6 +57,7 @@ const environment = process.env['NODE_ENV']
     ClinicsModule,
     InvitationsModule,
     AppointmentsModule,
+    PatientsModule,
   ],
   controllers: [AppController],
   providers: [

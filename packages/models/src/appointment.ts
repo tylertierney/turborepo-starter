@@ -1,6 +1,12 @@
 import { minutesToMilliseconds } from 'date-fns'
 import { randFutureDate, randParagraph, randUuid } from '@ngneat/falso'
 import { mockUser, User } from './user.js'
+import { mockPatient, Patient } from './patient.js'
+
+// keep:
+// slate
+// mauve
+// purple, but dark mode needs to be more subtle
 
 export type AppointmentColor =
   | 'amber'
@@ -72,7 +78,16 @@ export const mockAppointmentType = () =>
 
 export type AppointmentType = (typeof appointmentTypes)[number]
 
-export const appointmentStatuses = [
+export type AppointmentStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'checked_in'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show'
+
+export const appointmentStatuses: AppointmentStatus[] = [
   'scheduled',
   'confirmed',
   'checked_in',
@@ -84,8 +99,6 @@ export const appointmentStatuses = [
 
 export const mockAppointmentStatus = () =>
   appointmentStatuses[~~(Math.random() * appointmentStatuses.length)]
-
-export type AppointmentStatus = (typeof appointmentStatuses)[number]
 
 export type Appointment = {
   startsAt: Date
@@ -102,6 +115,7 @@ export type Appointment = {
   room?: {
     name?: string
   }
+  patient: Patient
 }
 
 export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
@@ -127,6 +141,7 @@ export const mockAppointment = (partial: Partial<Appointment>): Appointment => {
     room: {
       name: 'Room A',
     },
+    patient: mockPatient(),
     ...partial,
   }
 }

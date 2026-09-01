@@ -19,9 +19,7 @@ import {
   useSidebar,
 } from '@repo/ui'
 import {
-  ArrowRightSquare,
   Calendar,
-  ChevronDown,
   ChevronsUpDown,
   House,
   LogOutIcon,
@@ -29,7 +27,6 @@ import {
   MenuIcon,
   ShieldCog,
   User,
-  User2,
 } from 'lucide-react'
 import { Link, Outlet, useNavigate } from 'react-router'
 import { useTheme } from '../context/ThemeProvider'

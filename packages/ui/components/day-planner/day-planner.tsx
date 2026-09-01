@@ -136,7 +136,8 @@ export type Plan = {
 export type DayPlannerProps = {
   interval?: 5 | 10 | 15 | 30 | 60
   plans: Plan[]
-  appointmentContent?: FC<Appointment>
+  appointmentContent?: FC<DayPlannerAppointment>
+  appointmentDialog?: FC<DayPlannerAppointment>
 }
 
 export const DayPlanner = ({
@@ -144,6 +145,7 @@ export const DayPlanner = ({
   plans = [],
   className,
   appointmentContent: AppointmentContent,
+  appointmentDialog: AppointmentDialog,
   ...rest
 }: DayPlannerProps & ComponentProps<'div'>) => {
   const [selectedInterval, setSelectedInterval] =
@@ -407,6 +409,10 @@ export const DayPlanner = ({
                           <DialogHeader>
                             <DialogTitle>Appointment Details</DialogTitle>
                           </DialogHeader>
+                          {/* {AppointmentContent && (
+                            <AppointmentContent {...appt} />
+                          )} */}
+                          {AppointmentDialog && <AppointmentDialog {...appt} />}
                           <DialogFooter>
                             <DialogClose
                               render={<Button variant="outline">Cancel</Button>}

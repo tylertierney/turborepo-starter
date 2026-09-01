@@ -1,6 +1,15 @@
 import { randFirstName, randPastDate, randUser } from '@ngneat/falso'
 import { randSex, type Sex, sexes } from '@repo/models'
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { AddressEntity } from '../addresses/address.entity.js'
+import { PracticeEntity } from '../practices/practice.entity.js'
 
 @Entity({ name: 'patients' })
 export class PatientEntity {
@@ -14,25 +23,52 @@ export class PatientEntity {
   @Column()
   firstName: string = ''
 
-  @Column({ nullable: true })
-  middleName: string = ''
+  @Column({ type: 'varchar', nullable: true })
+  middleName: string | null = null
 
   @Column()
   lastName: string = ''
 
-  @Column()
-  preferredName: string = ''
+  @Column({ type: 'varchar', nullable: true })
+  email: string | null = null
+
+  @Column({ type: 'varchar', nullable: true })
+  phone: string | null = null
+
+  @Column({ type: 'varchar', nullable: true })
+  preferredName: string | null = null
 
   @Column({
     type: 'simple-enum',
     enum: sexes,
-    default: 'F',
-    nullable: false,
+    nullable: true,
   })
-  sex!: Sex
+  sex: Sex | null = null
+
+  @Column({ type: 'varchar', nullable: true })
+  genderIdentity: string | null = null
+
+  @Column({ type: 'date' })
+  dateOfBirth!: Date
+
+  @Column({ type: 'timestamptz', nullable: true })
+  deceasedAt: Date | null = null
+
+  @Column({ type: 'varchar', nullable: true })
+  preferredLanguage: string | null = null
+
+  @ManyToOne(() => AddressEntity, { cascade: true, nullable: true })
+  address: AddressEntity | null = null
 
   @Column()
-  dateOfBirth!: Date
+  @JoinColumn()
+  practiceId!: string
+
+  @ManyToOne(() => PracticeEntity)
+  practice!: PracticeEntity
+
+  @CreateDateColumn()
+  createdAt: Date = new Date()
 }
 
 export const mockPatientEntity = (

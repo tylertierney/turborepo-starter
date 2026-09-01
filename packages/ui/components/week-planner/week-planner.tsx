@@ -10,14 +10,18 @@ import { ComponentProps, FC } from 'react'
 import { DateRange } from 'react-day-picker'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
-import { DayPlanner, Plan } from '../day-planner/day-planner'
-import { Appointment } from '@repo/models'
+import {
+  DayPlanner,
+  DayPlannerAppointment,
+  Plan,
+} from '../day-planner/day-planner'
 
 export type WeekPlannerProps = {
   dateRange: NonNullable<DateRange>
   setDateRange: (dateRange: NonNullable<DateRange>) => void
   plans: Plan[]
-  appointmentContent?: FC<Appointment>
+  appointmentContent?: FC<DayPlannerAppointment>
+  appointmentDialog?: FC<DayPlannerAppointment>
 }
 
 export const WeekPlanner = ({
@@ -25,6 +29,7 @@ export const WeekPlanner = ({
   setDateRange,
   plans,
   appointmentContent: AppointmentContent,
+  appointmentDialog: AppointmentDialog,
   className = '',
   ...rest
 }: WeekPlannerProps & ComponentProps<'div'>) => {
@@ -42,7 +47,6 @@ export const WeekPlanner = ({
           <Button
             variant="outline"
             size="icon-sm"
-            className={cn(className)}
             onClick={() =>
               setDateRange({
                 from: subDays(dateRange.from || new Date(Date.now()), 7),
@@ -61,7 +65,6 @@ export const WeekPlanner = ({
           <Button
             variant="outline"
             size="icon-sm"
-            className={cn(className)}
             onClick={() =>
               setDateRange({
                 from: nextSunday(dateRange.from || new Date(Date.now())),
@@ -73,7 +76,11 @@ export const WeekPlanner = ({
           </Button>
         </div>
       </div>
-      <DayPlanner plans={plans} appointmentContent={AppointmentContent} />
+      <DayPlanner
+        plans={plans}
+        appointmentContent={AppointmentContent}
+        appointmentDialog={AppointmentDialog}
+      />
     </div>
   )
 }

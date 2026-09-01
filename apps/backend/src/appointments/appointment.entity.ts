@@ -10,6 +10,8 @@ import { PracticeEntity } from '../practices/practice.entity.js'
 import { ClinicEntity } from '../clinics/clinic.entity.js'
 import { UserEntity } from '../users/user.entity.js'
 import { ClinicRoomEntity } from '../clinic-room/clinic-room.entity.js'
+import { type AppointmentStatus, appointmentStatuses } from '@repo/models'
+import { PatientEntity } from '../patients/patient.entity.js'
 
 @Entity({ name: 'appointments' })
 export class AppointmentEntity {
@@ -60,4 +62,17 @@ export class AppointmentEntity {
     nullable: false,
   })
   primaryProvider!: UserEntity
+
+  @Column({
+    type: 'simple-enum',
+    enum: appointmentStatuses,
+    default: 'scheduled',
+  })
+  status!: AppointmentStatus
+
+  @ManyToOne(() => PatientEntity, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  patient!: PatientEntity
 }

@@ -1,3 +1,4 @@
+import styles from './schedule.module.scss'
 import {
   Button,
   Checkbox,
@@ -28,13 +29,21 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
+  subDays,
 } from 'date-fns'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api'
 import { AppointmentContent } from './appointment-content'
+import { AppointmentDialog } from './appointment-dialog'
 
 type View = 'day' | 'week' | 'month'
+
+// type ScheduleFilter = {
+//   users: string[]
+//   appointmentTypes: string[]
+//   status: string[]
+// }
 
 export const Schedule = () => {
   const today = new Date(Date.now())
@@ -46,6 +55,9 @@ export const Schedule = () => {
 
   const [selectedDate, setSelectedDate] = useState(today)
   const [view, setView] = useStateWithLocalStorage<View>('calendar-view', 'day')
+
+  // const [filters, setFilters] = useState({})
+
   const [selectedUsers, setSelectedUsers] = useStateWithLocalStorage<string[]>(
     'selected-user-calendars',
     [],
@@ -90,12 +102,14 @@ export const Schedule = () => {
     },
   })
 
-  const { data: appointments } = useQuery({
+  const { data: appointments, isFetching } = useQuery({
     queryKey: [
       `appointments`,
+      selectedDate.toISOString(),
       selectedDateRange.from.toISOString(),
       selectedDateRange.to.toISOString(),
       selectedUsers.join(','),
+      showWeekend,
     ],
     queryFn: async () => {
       const query = new URLSearchParams()
@@ -149,11 +163,31 @@ export const Schedule = () => {
     return {
       title: (
         <div className="flex items-center gap-2">
+          {view === 'day' && (
+            <Button
+              variant="outline"
+              size="icon-sm"
+
+              onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+            >
+              <ChevronLeft />
+            </Button>
+          )}
           {currentDay && <PingingDot className="text-blue-400 self-center" />}
           <b>{format(date, 'EEEE')}</b>{' '}
           <span className="text-muted-foreground text-xs text-nowrap mt-0.5">
             {format(date, 'MMM d')}
           </span>
+          {view === 'day' && (
+            <Button
+              variant="outline"
+              size="icon-sm"
+
+              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+            >
+              <ChevronRight />
+            </Button>
+          )}
         </div>
       ),
       currentDay,
@@ -183,7 +217,13 @@ export const Schedule = () => {
 
   return (
     <>
-      <div className="flex items-center w-full h-14 px-4 gap-4 overflow-x-auto">
+      <div
+        className={cn(
+          'flex items-center w-full h-14 px-4 gap-4 overflow-x-auto',
+          styles.schedule,
+          isFetching && styles.isFetching,
+        )}
+      >
         <div className="flex gap-1">
           {view === 'day' ? (
             <DatePicker
@@ -254,6 +294,7 @@ export const Schedule = () => {
             className={cn(view !== 'day' && 'hidden')}
             plans={plans}
             appointmentContent={AppointmentContent}
+            appointmentDialog={AppointmentDialog}
           />
           <WeekPlanner
             dateRange={viewedDateRange}
@@ -265,6 +306,7 @@ export const Schedule = () => {
             }}
             plans={plans}
             appointmentContent={AppointmentContent}
+            appointmentDialog={AppointmentDialog}
           />
           <MonthPlanner
             className={cn(view !== 'month' && 'hidden')}

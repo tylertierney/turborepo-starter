@@ -28,6 +28,7 @@ export class AppointmentsController {
     )
     userIds: string[],
   ) {
+    // await new Promise(resolve => setTimeout(resolve, 3_000))
     return this.appointmentsService.findAllByStartDate(
       query.startsAt,
       query.endsAt,

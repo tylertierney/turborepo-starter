@@ -8,12 +8,14 @@ import {
   Badge,
 } from '@repo/ui'
 import { convertDatatableParamsToQueryString } from '@repo/ui'
-import { PaginatedResult, User } from '@repo/models'
+import { appointmentStatuses, PaginatedResult, User } from '@repo/models'
 import { useQuery } from '@tanstack/react-query'
 import { DatatableParams } from '@repo/ui'
 import { useState } from 'react'
 import { useDebouncedIsFetching } from '../hooks/useDebouncedIsFetching'
 import { EyeTopSvg } from '../svg/EyeTopSvg/EyeTopSvg'
+import { getIconFromApptStatus } from './schedule/appointment-dialog'
+import { snakeCaseToReadable } from '../utils/utils'
 
 const strings = ['abc', 'defg', 'h', 'ij', 'kl', 'mno', 'pqrs', 'tu', 'v']
 
@@ -60,47 +62,17 @@ export default function Home() {
     delay: 200,
   })
 
-  const [items, setItems] = useState(strings)
-
   return (
     <div className="flex flex-col w-full p-4 sm:p-8 md:max-w-6xl">
-      {/* <TruncatedChips
-        style={{
-          minWidth: '180px',
-          maxWidth: '180px',
-          maxHeight: '120px',
-          border: 'solid red 1px',
-        }}
-        items={items}
-      /> */}
+      <div className="flex flex-col gap-2">
+        {appointmentStatuses.map((status) => (
+          <Badge variant="outline" key={status}>
+            {getIconFromApptStatus(status)}
+            {snakeCaseToReadable(status)}
+          </Badge>
+        ))}
+      </div>
 
-      <ChipList
-        items={items}
-        renderChip={(str) => <Badge variant="secondary">{str}</Badge>}
-        renderOverflow={(count) => <Badge variant="secondary">+{count}</Badge>}
-        style={{
-          maxWidth: '200px',
-          maxHeight: '60px',
-          border: 'solid red 1px',
-        }}
-      />
-
-      <Button
-        variant="default"
-        onClick={() => {
-          setItems((prev) => [...prev, randWord()])
-        }}
-      >
-        Add
-      </Button>
-      <Button
-        variant="destructive"
-        onClick={() => {
-          setItems((prev) => [...prev].slice(0, prev.length - 1))
-        }}
-      >
-        Remove
-      </Button>
       <br />
       <br />
       <br />

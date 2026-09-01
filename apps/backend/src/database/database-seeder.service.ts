@@ -8,17 +8,25 @@ import {
 } from '../practices/practice.entity.js'
 import { mockUserEntity, UserEntity } from '../users/user.entity.js'
 import {
+  randBetweenDate,
   randFutureDate,
   randNumber,
   randParagraph,
   randSentence,
 } from '@ngneat/falso'
-import { AddressEntity } from '../addresses/address.entity.js'
+import {
+  AddressEntity,
+  mockAddressEntity,
+} from '../addresses/address.entity.js'
 import { auth } from '../auth.js'
 import { InvitationEntity } from '../invitations/invitation.entity.js'
-import { hoursToMilliseconds } from 'date-fns'
+import { addDays, hoursToMilliseconds } from 'date-fns'
 import { AppointmentEntity } from '../appointments/appointment.entity.js'
-import { appointmentTypes, mockAppointmentType, mockClinic } from '@repo/models'
+import {
+  appointmentTypes,
+  mockAppointmentStatus,
+  mockPatient,
+} from '@repo/models'
 import {
   AppointmentTypeEntity,
   mockAppointmentTypeEntity,
@@ -27,6 +35,7 @@ import {
   ClinicRoomEntity,
   mockClinicRoomName,
 } from '../clinic-room/clinic-room.entity.js'
+import { PatientEntity } from '../patients/patient.entity.js'
 
 @Injectable()
 export class DatabaseSeederService implements OnApplicationBootstrap {
@@ -57,7 +66,10 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     private readonly appointmentsRepository: Repository<AppointmentEntity>,
 
     @InjectRepository(ClinicRoomEntity)
-    private readonly clinicRoomRepository: Repository<ClinicRoomEntity>,
+    private readonly clinicRoomsRepository: Repository<ClinicRoomEntity>,
+
+    @InjectRepository(PatientEntity)
+    private readonly patientsRepository: Repository<PatientEntity>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -78,45 +90,45 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     `)
 
     // test practice + clinic + user
-    const testPractice = await this.practicesRepository.save({
-      active: true,
-      name: 'Tampa Eye',
-      image: 'https://tampaeye.com/wp-content/uploads/2024/06/logo-cropped.png',
-      url: 'https://tampaeye.com',
-    })
+    // const testPractice = await this.practicesRepository.save({
+    //   active: true,
+    //   name: 'Tampa Eye',
+    //   image: 'https://tampaeye.com/wp-content/uploads/2024/06/logo-cropped.png',
+    //   url: 'https://tampaeye.com',
+    // })
 
-    const testClinic = await this.clinicsRepository.save({
-      name: 'Carrolwood',
-      address: {
-        city: 'Tampa',
-        state: 'Florida',
-        street1: '123 Main St',
-        postalCode: '33604',
-      },
-      practice: testPractice,
-      image: mockClinicEntity().image,
-    })
+    // const testClinic = await this.clinicsRepository.save({
+    //   name: 'Carrolwood',
+    //   address: {
+    //     city: 'Tampa',
+    //     state: 'Florida',
+    //     street1: '123 Main St',
+    //     postalCode: '33604',
+    //   },
+    //   practice: testPractice,
+    //   image: mockClinicEntity().image,
+    // })
 
-    const authTestUser = await auth.api.signUpEmail({
-      body: {
-        email: 'johndoe@email.com',
-        name: 'John Doe',
-        password: 'password',
-      },
-    })
+    // const authTestUser = await auth.api.signUpEmail({
+    //   body: {
+    //     email: 'johndoe@email.com',
+    //     name: 'John Doe',
+    //     password: 'password',
+    //   },
+    // })
 
-    const testUser = await this.usersRepository.save({
-      id: authTestUser.user.id,
-      firstName: 'John',
-      lastName: 'Doe',
-      active: true,
-      clinics: [testClinic],
-      practice: testPractice,
-      email: 'johndoe@email.com',
-      role: 'owner',
-      phone: '123 867 5309',
-      practiceId: testPractice.id,
-    })
+    // const testUser = await this.usersRepository.save({
+    //   id: authTestUser.user.id,
+    //   firstName: 'John',
+    //   lastName: 'Doe',
+    //   active: true,
+    //   clinics: [testClinic],
+    //   practice: testPractice,
+    //   email: 'johndoe@email.com',
+    //   role: 'owner',
+    //   phone: '123 867 5309',
+    //   practiceId: testPractice.id,
+    // })
 
     // await this.invitationsRepository.save({
     //   email: 'tytierney@yahoo.com',
@@ -222,7 +234,7 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       fakeUsers = [...fakeUsers, ...owners, ...admins, ...providers, ...staff]
     }
 
-    const users = await this.usersRepository.save(fakeUsers)
+    await this.usersRepository.save(fakeUsers)
 
     // for (const user of users) {
     //   await auth.api.signUpEmail({
@@ -233,6 +245,36 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
     //     },
     //   })
     // }
+
+    ////////////// Generate patients
+
+    const patients = savedPractices
+      .map(practice => {
+        return Array(randNumber({ min: 70, max: 100 }))
+          .fill(null)
+          .map(() => {
+            const p = mockPatient()
+
+            return new PatientEntity({
+              firstName: p.firstName,
+              middleName: p.middleName,
+              lastName: p.lastName,
+              email: p.email,
+              phone: p.phone,
+              address: mockAddressEntity(),
+              dateOfBirth: p.dateOfBirth,
+              deceasedAt: null,
+              genderIdentity: p.genderIdentity,
+              practice,
+              preferredLanguage: 'English',
+              preferredName: p.preferredName,
+              sex: p.sex,
+            })
+          })
+      })
+      .flat()
+
+    const savedPatients = await this.patientsRepository.save(patients)
 
     ////////////// Generate appointments
 
@@ -270,9 +312,9 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       )
       .flat()
 
-    const savedRooms = await this.clinicRoomRepository.save(clinicRooms)
+    await this.clinicRoomsRepository.save(clinicRooms)
 
-    const finalSavedRooms = await this.clinicRoomRepository.find({
+    const savedRooms = await this.clinicRoomsRepository.find({
       relations: {
         clinic: {
           users: true,
@@ -281,23 +323,32 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
       },
     })
 
-    const appts = finalSavedRooms
+    const appts = savedRooms
       .map(room =>
         Array(100)
           .fill(null)
           .map(() => {
-            const startTime = randFutureDate()
-            const endTime =
-              startTime.getTime() +
-              randNumber({
-                min: hoursToMilliseconds(1),
-                max: hoursToMilliseconds(4),
-              })
+            const startTime = randBetweenDate({
+              from: new Date(),
+              to: addDays(new Date(), 14),
+            })
 
-            // return new Date(startTime, new Date(endTime))
+            const duration = randNumber({
+              min: hoursToMilliseconds(0.5),
+              max: hoursToMilliseconds(4),
+            })
+
+            const endTime = startTime.getTime() + duration
+
             return { startsAt: new Date(startTime), endsAt: new Date(endTime) }
           })
           .map(({ startsAt, endsAt }) => {
+            const patients = savedPatients.filter(
+              ({ practiceId }) => practiceId === room.clinic.practice?.id,
+            )
+
+            const randPatient = patients[~~(Math.random() * patients.length)]
+
             return new AppointmentEntity({
               primaryProvider:
                 room.clinic.users[~~(Math.random() * room.clinic.users.length)],
@@ -309,49 +360,12 @@ export class DatabaseSeederService implements OnApplicationBootstrap {
               description: randParagraph(),
               type: savedApptTypes[~~(Math.random() * savedApptTypes.length)],
               room,
+              status: mockAppointmentStatus(),
+              patient: randPatient,
             })
           }),
       )
       .flat()
-
-    await this.appointmentsRepository.save(appts)
-
-    // const savedClinicRooms = await this.clinicRoomRepository.find({
-    //   relations: {
-    //     clinic: true,
-    //   }
-    // })
-
-    // const appts = finalSavedClinics
-    //   .map(({ id: clinicId, practice, users }) =>
-    //     Array(300)
-    //       .fill(null)
-    //       .map(() => {
-    //         const startTime = randFutureDate()
-    //         const endTime =
-    //           startTime.getTime() +
-    //           randNumber({
-    //             min: hoursToMilliseconds(1),
-    //             max: hoursToMilliseconds(4),
-    //           })
-
-    //         // return new Date(startTime, new Date(endTime))
-    //         return { startsAt: new Date(startTime), endsAt: new Date(endTime) }
-    //       })
-    //       .map(({ startsAt, endsAt }) => {
-    //         return new AppointmentEntity({
-    //           primaryProvider: users[~~(Math.random() * users.length)],
-    //           practiceId: practice.id,
-    //           clinicId,
-    //           startsAt,
-    //           endsAt,
-    //           name: randSentence(),
-    //           description: randParagraph(),
-    //           type: savedApptTypes[~~(Math.random() * savedApptTypes.length)],
-    //         })
-    //       }),
-    //   )
-    //   .flat()
 
     await this.appointmentsRepository.save(appts)
   }

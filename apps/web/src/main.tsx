@@ -24,6 +24,7 @@ import { SignUp, signUpLoader } from './pages/auth/signup/signup'
 import { Login } from './pages/auth/login/login'
 import { ProtectedRoute } from './guards/protected-route'
 import { Schedule } from './pages/schedule/schedule'
+import { getCookie } from './utils/utils'
 
 export const authClient = createAuthClient()
 
@@ -35,6 +36,8 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+const sidebarOpen = getCookie('sidebar_state') === 'true'
 
 const App = () => (
   <>
@@ -63,7 +66,7 @@ const App = () => (
                   {
                     path: '',
                     element: (
-                      <SidebarProvider>
+                      <SidebarProvider defaultOpen={sidebarOpen}>
                         <NavLayout />
                       </SidebarProvider>
                     ),
